@@ -348,7 +348,22 @@ elsif [ "-w", "--widen" ].include? ARGV[0] then
     tmp = Dir.entries "."
     tmp.delete "."
     tmp.delete ".."
-    rnr.widen *tmp
+    
+    # This could be quite dangerous if erroneously invoked (eg. in the user's
+    # home directory). Better use a confirmation prompt:
+    print "Do you really want to rename every file and folder in the " +
+          "current directory (#{Dir.pwd})? [y/N] "
+    answer = STDIN.gets.chomp
+
+    # Y/y: go on.
+    if "Y" == Unicode::capitalize( answer ) then
+      rnr.widen *tmp
+
+    # Anything else: abort.
+    else
+      puts "Operation aborted."
+      exit 0
+    end
 
   # Else, do it just for the selected files:
   else
@@ -366,7 +381,22 @@ else
     tmp = Dir.entries "."
     tmp.delete "."
     tmp.delete ".."
-    rnr.compact *tmp
+
+    # This could be quite dangerous if erroneously invoked (eg. in the user's
+    # home directory). Better use a confirmation prompt:
+    print "Do you really want to rename every file and folder in the " +
+          "current directory (#{Dir.pwd})? [y/N] "
+    answer = STDIN.gets.chomp
+
+    # Y/y: go on.
+    if "Y" == Unicode::capitalize( answer ) then
+      rnr.compact *tmp
+
+    # Anything else: abort.
+    else
+      puts "Operation aborted."
+      exit 0
+    end
 
   # Else, do it just for the selected files:
   else
