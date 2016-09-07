@@ -306,18 +306,20 @@ def help_reference()
   # Help reference lines:
   lines.push "ReNameR: a simple file renamer."
   lines.push "Usage:"  
-  lines.push "#{$0}                                  : recursively renames " +
-             "every file and and folder in the current directory to a " +
-             "CamelCase format."
-  lines.push "#{$0} <file 1> ... <file n>            : recursively renames " +
-             "the given files and folders to a CamelCase format."
-  lines.push "#{$0} -w                               : recursively renames " +
-             "every file and and folder in the current directory adding " +
-             "spaces when needed."
-  lines.push "#{$0} -w/--widen <file 1> ... <file n> : recursively renames " +
-             "the given files and folders adding spaces when needed."
-  lines.push "#{$0} -h                               : shows this help " +
-             "reference."
+  lines.push "#{File.basename $0}                                  : " +
+             "recursively renames every file and and folder in the current " +
+             "directory to a CamelCase format."
+  lines.push "#{File.basename $0} <file 1> ... <file n>            : " +
+             "recursively renames the given files and folders to a CamelCase" +
+             " format."
+  lines.push "#{File.basename $0} -w                               : " +
+             "recursively renames every file and and folder in the current " +
+             "directory adding spaces when needed."
+  lines.push "#{File.basename $0} -w/--widen <file 1> ... <file n> : " +
+             "recursively renames the given files and folders adding spaces " +
+             "when needed."
+  lines.push "#{File.basename $0} -h                               : shows " +
+             "this help reference."
   lines.push "\nSee the configuration file located in #{ENV['HOME']}/.rnr " +
              "to add your personal tweaks."
 
