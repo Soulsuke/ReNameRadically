@@ -24,10 +24,14 @@ req_gems.each do |i|
   rescue LoadError
     unless gems_missing then
       gems_missing = true
-      puts "You lack the following gems:"
+      puts "You lack the following ruby gems to run this script:"
     end
     puts " > #{i}"
   end
+end
+
+if gems_missing then
+  exit -1
 end
 
 ###############################################################################
@@ -72,7 +76,7 @@ class Renamer
                   "'", "(", "-", "<", "[", "{", "-"
                  ],
                  "wide_no_space_before": [
-                   ".", ",", "?", "!", "'", ")", "}", "]", ">", "-"
+                   ".", ",", "?", "!", "'", ")", "}", "]", ">", "-", "_"
                  ]
                }
 
@@ -101,7 +105,7 @@ class Renamer
         @as_spaces = [ "_" ]
         @delimiters = [ "-", "+", "(", ")", "'", "&", "." ]
         @ex_after = [ "'", "(", "-", "<", "[", "{", "-" ]
-        @ex_before = [ ".", ",", "?", "!", "'", ")", "}", "]", ">", "-" ]
+        @ex_before = [ ".", ",", "?", "!", "'", ")", "}", "]", ">", "-", "_" ]
       end
     end
   end
