@@ -1,12 +1,14 @@
 # ReNameR
-A simple (and probably dirty) mass-files renamer in ruby.
+A simple (and probably dirty) files mass-renamer in ruby.
 
 This script has two functions:
- 1. compact: renames a file into its CamelCase version, removing spaces and
+ 1. compact: renames a file to a CamelCase format, removing spaces and
     using capital letters to separate words. Other capital letters are
     converted to lower case.
  2. widen: renames a file adding spaces when needed.
 Note that both these functions are recursive for folders.
+
+It allows per-user configuration through a json file.
 
 Tested on ruby version 2.3.1.
 
