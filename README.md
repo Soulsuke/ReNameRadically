@@ -11,7 +11,7 @@ Note that both these functions are recursive for folders.
 When renaming a file, if there already is one with the destination name, a
 numeric index will be appended before the file extension.
 
-It allows per-user configuration through a json file.
+It allows per-user configuration through a YAML file located in $HOME/.rnr.
 
 Tested on ruby version 2.3.1.
 

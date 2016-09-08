@@ -16,7 +16,7 @@ as well.
 ### Attempt to require the necessary gems.                                  ###
 ###############################################################################
 # Required gems:
-req_gems = [ "json", "pathname", "unicode" ]
+req_gems = [ "pathname", "unicode", "yaml" ]
 
 # Control variable:
 gems_missing = false
@@ -62,10 +62,11 @@ class Renamer
 
     # Attempt to read from the config file:
     begin
-      @as_spaces = JSON.parse( File.read @config )["treated_as_spaces"]
-      @delimiters = JSON.parse( File.read @config )["word_delimiters"]
-      @ex_after = JSON.parse( File.read @config )["wide_no_space_after"]
-      @ex_before = JSON.parse( File.read @config )["wide_no_space_before"]
+      loaded_config = YAML.load_file @config
+      @as_spaces = loaded_config["as_spaces"]
+      @delimiters = loaded_config["delimiters"]
+      @ex_after = loaded_config["ex_after"]
+      @ex_before = loaded_config["ex_before"]
 
       # Fastest way to check for data consistency:
       @as_spaces[0]
@@ -75,35 +76,72 @@ class Renamer
 
     # If it fails, create a new default config file:
     rescue
-      config = {
-                 "treated_as_spaces": [
-                   "_"
-                 ],
-                 "word_delimiters": [
-                   "-", "+", "(", ")", "'", "&", "."
-                 ],
-                 "wide_no_space_after": [
-                  "'", "(", "-", "<", "[", "{", "-"
-                 ],
-                 "wide_no_space_before": [
-                   ".", ",", "?", "!", "'", ")", "}", "]", ">", "-", "_"
-                 ]
-               }
+      # This is the best way I can think of to hardcode the default config file
+      # without breaking the formatting.
+      config = Array.new
+      config.push "# Characters treated as spaces, which get removed while " +
+                  "renaming a file in"
+      config.push "# non-wide mode:"
+      config.push "as_spaces:"
+      config.push "- \"_\""
+      config.push " "
+      config.push "# Characters after which a word should be capitalized in" +
+                  " non-wide mode:"
+      config.push "delimiters:"
+      config.push "- \"-\""
+      config.push "- \"+\""
+      config.push "- \"(\""
+      config.push "- \")\""
+      config.push "- \"[\""
+      config.push "- \"]\""
+      config.push "- \"{\""
+      config.push "- \"}\""
+      config.push "- \"'\""
+      config.push "- \"&\""
+      config.push "- \".\""
+      config.push "- \"!\""
+      config.push "- \"?\""
+      config.push " "
+      config.push "# Characters after which must not be added a space in " +
+                  "wide mode:"
+      config.push "ex_after:"
+      config.push "- \"'\""
+      config.push "- \"(\""
+      config.push "- \"-\""
+      config.push "- \"<\""
+      config.push "- \"[\""
+      config.push "- \"{\""
+      config.push "- \".\""
+      config.push " "
+      config.push "# Characters before which must not be added a space in " +
+                  "wide mode:"
+      config.push "ex_before:"
+      config.push "- \".\""
+      config.push "- \",\""
+      config.push "- \"?\""
+      config.push "- \"!\""
+      config.push "- \"'\""
+      config.push "- \")\""
+      config.push "- \"]\""
+      config.push "- \"}\""
+      config.push "- \">\""
+      config.push "- \"-\""
+      config.push "- \"_\""
+      config.push " "
+
+      config = config.join "\n"
+
+      loaded_config = YAML.load config
 
       # Attempt to create the file:
       begin 
         File.open @config, "w" do |f|
-          f.puts JSON.pretty_generate config
+          f.puts config
         end
-
         puts "Created a new config file: #{@config}"
 
-        # Then load the data (if something fails now, something's really
-        # going on on this system):
-        @as_spaces = JSON.parse( File.read @config )["treated_as_spaces"]
-        @delimiters = JSON.parse( File.read @config )["word_delimiters"]
-        @ex_after = JSON.parse( File.read @config )["wide_no_space_after"]
-        @ex_before = JSON.parse( File.read @config )["wide_no_space_before"]
+        # ...And be sure that everything went right:
+        loaded_config = YAML.load_file @config
 
       # Something went horribly wrong: maybe there's no home folder, or its
       # permissions are all wrong... So, screw the config file and use default
@@ -111,12 +149,13 @@ class Renamer
       rescue
         puts "WARNING: could not read/write file #{@config}, you might want" +
              " to check out why."
-
-        @as_spaces = [ "_" ]
-        @delimiters = [ "-", "+", "(", ")", "'", "&", "." ]
-        @ex_after = [ "'", "(", "-", "<", "[", "{", "-" ]
-        @ex_before = [ ".", ",", "?", "!", "'", ")", "}", "]", ">", "-", "_" ]
       end
+
+      # Finally, valorize these:
+      @as_spaces = loaded_config["as_spaces"]
+      @delimiters = loaded_config["delimiters"]
+      @ex_after = loaded_config["ex_after"]
+      @ex_before = loaded_config["ex_before"]
     end
   end
 
