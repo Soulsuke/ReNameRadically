@@ -162,24 +162,27 @@ class Renamer
   # appended to its name. Returns the new name of the file.
   private def smartRename( file, new_name )
     # Hopefully, this is already the name that will be used:
-    new_file = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
+    destination = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
 
-    # Index variable for worst-case scenario:
-    index = 0
+    # Rename the file only if the destination is different than the origin.
+    unless file.basename == destination.basename then
+      # Index variable for worst-case scenario:
+      index = 0
 
-    # To be honest... If this goes beyond 2, the user is really just messing 
-    # with us.
-    while new_file.exist? do
-      index += 1
-      new_file = Pathname.new "#{file.dirname}/#{new_name}-#{index}" +
-                              "#{file.extname}"
+      # To be honest... If this goes beyond 2, the user is really just messing 
+      # with us.
+      while destination.exist? do
+        index += 1
+        destination = Pathname.new "#{file.dirname}/#{new_name}-#{index}" +
+                                   "#{file.extname}"
+      end
+
+      # Rename away!
+      file.rename destination
     end
 
-    # Reanem away!
-    file.rename new_file
-
-    # And return the new file (Pathname format):
-    return new_file
+    # In any case, return the destination (Pathname format):
+    return destination
   end
 
   # Private method, called through compact: renames a single file to a compact
