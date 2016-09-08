@@ -15,21 +15,31 @@ as well.
 ### Act I                                                                   ###
 ### Attempt to require the necessary gems.                                  ###
 ###############################################################################
+# Required gems:
 req_gems = [ "json", "pathname", "unicode" ]
+
+# Control variable:
 gems_missing = false
 
+# Let's check the required gems!
 req_gems.each do |i|
+  # If requiring goes right, just move on.
   begin
     require i
+
+  # If something went wrong, print out the gem's name.
   rescue LoadError
+    # Also, print this message the first time:
     unless gems_missing then
       gems_missing = true
       puts "You lack the following ruby gems to run this script:"
     end
+
     puts " > #{i}"
   end
 end
 
+# ...Of course, there's no point in going on if a require failed.
 if gems_missing then
   exit -1
 end
@@ -146,6 +156,32 @@ class Renamer
     return ok
   end
 
+  # Private method: will smartly rename a file (Pathname format) to
+  # new_name, preserving the original path and extension. If another file with
+  # the destination name already exists, the new one will have a number
+  # appended to its name. Returns the new name of the file.
+  private def smartRename( file, new_name )
+    # Hopefully, this is already the name that will be used:
+    new_file = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
+
+    # Index variable for worst-case scenario:
+    index = 0
+
+    # To be honest... If this goes beyond 2, the user is really just messing 
+    # with us.
+    while new_file.exist? do
+      index += 1
+      new_file = Pathname.new "#{file.dirname}/#{new_name}-#{index}" +
+                              "#{file.extname}"
+    end
+
+    # Reanem away!
+    file.rename new_file
+
+    # And return the new file (Pathname format):
+    return new_file
+  end
+
   # Private method, called through compact: renames a single file to a compact
   # CamelCase version. This contains the main logic of renaming files in such
   # way. Returns the new name of the renamed file.
@@ -172,11 +208,8 @@ class Renamer
       file_name[idx] = Unicode::capitalize entry
     end
     
-    # Rename the file:
-    file.rename "#{file.dirname}/#{file_name.join}#{file.extname}"
-
-    # Return the new file:
-    return Pathname.new "#{file.dirname}/#{file_name.join}#{file.extname}"
+    # Rename the file and return its new name:
+    return smartRename file, file_name.join
   end
   
   # Private method, called through compact: recursively renames a folder and
@@ -248,14 +281,8 @@ class Renamer
       new_file_name += c
     end
 
-    # Complete new name:
-    new_file_name = "#{file.dirname}/#{new_file_name}#{file.extname}"
-
-    # Rename the file:
-    file.rename new_file_name
-
-    # Return the new file:
-    return Pathname.new new_file_name
+    # Rename the new file and return its new name:
+    return smartRename file, new_file_name
   end
 
   # Private method, called through widen: recursively renames a folder and
@@ -292,7 +319,6 @@ class Renamer
       end
     end
   end
-
 end
 
 ###############################################################################
@@ -346,6 +372,8 @@ elsif [ "-w", "--widen" ].include? ARGV[0] then
   # (except . and ..):
   if tmp.empty? then
     tmp = Dir.entries "."
+
+    # Always remove "." and "..".
     tmp.delete "."
     tmp.delete ".."
     
@@ -379,6 +407,8 @@ else
   # (except . and ..):
   if tmp.empty? then
     tmp = Dir.entries "."
+
+    # Always remove "." and "..".
     tmp.delete "."
     tmp.delete ".."
 
