@@ -200,6 +200,13 @@ class Renamer
   # the destination name already exists, the new one will have a number
   # appended to its name. Returns the new name of the file.
   private def smartRename( file, new_name )
+    # Be sure to remove characters which are not allowed for file names:
+    new_name.gsub! "/" ""
+    new_name.gsub! "\0" ""
+
+    # Also, the max name length is 255, including the extension:
+    new_name.scan( /.{#{255 - "#{file.extname}".length}}/ )[0]
+
     # Hopefully, this is already the name that will be used:
     destination = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
 
@@ -436,14 +443,40 @@ def help_reference()
              "recursively renames the given files and folders replacing " +
              "any match of the given regex with the given substitute."              
   lines.push "\e[34m#{name} -h\e[0m: shows this help reference."
-  lines.push "\n\e[33mNOTE\e[0m: if no files are specified to a command, it " +
+  lines.push ""
+  lines.push "\e[33mNOTE\e[0m: if no files are specified to a command, it " +
              "will process every file in the current folder."
-  lines.push "\nSee the configuration file located in \e[34m" +
+  lines.push ""
+  lines.push "See the configuration file located in \e[34m" +
              "#{ENV['HOME']}/.rnr\e[0m to add your personal tweaks."
 
-  # Max 80 characters per line! :3
+  # Max 80 characters per line, but preserving words integrity! :3
   lines.each do |entry|
-    puts entry
+    # 80 characters line container:
+    composed = ""
+
+    # Split each message string on spaces:
+    entry.split( " " ).each do |word|
+      # If the current composed message plus the current word exceeds 80 is
+      # within 80 characters, keep composing:
+      if 80 >= "#{composed + " " + word}".length then
+        # Add a space when needed:
+        unless composed.empty? then
+          composed += " "
+        end
+        composed += "#{word}"
+
+      # If the current word would not fit in an 80 characters line, print the
+      # current composed message, and start composing the next one with an
+      # indentation of 2 spaces.
+      else
+        puts composed
+        composed = "  #{word}"
+      end
+    end
+
+    # Finally, print the last line:
+    puts composed
   end
 end
 
