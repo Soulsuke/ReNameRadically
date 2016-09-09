@@ -203,8 +203,10 @@ class Renamer
     # Hopefully, this is already the name that will be used:
     destination = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
 
-    # Rename the file only if the destination is different than the origin.
-    unless file.basename == destination.basename then
+    # Rename the file only if the destination is different than the origin and
+    # if the file name is not empty.
+    unless file.basename == destination.basename or "#{new_name}".empty? or
+           "." == new_name or ".." == new_name then
       # Index variable for worst-case scenario:
       index = 0
 
@@ -270,7 +272,7 @@ class Renamer
   end
 
   # Public method: checks if the given files exist via checkFiles, then calls
-  # compactFile and compactFolder to process resectedly the given files and
+  # compactFile and compactFolder to process respectedly the given files and
   # folders.
   def compact( *files )
     # First off: check if the files exist.
@@ -328,7 +330,7 @@ class Renamer
   end
 
   # Private method, called through widen: recursively renames a folder and
-  # its content to a wide.
+  # its content to a wide name.
   private def widenFolder( folder )
     # Rename the folder:
     new_folder_name = widenFile folder
@@ -343,7 +345,7 @@ class Renamer
   end
 
   # Public method: checks if the given files exist via checkFiles, then calls
-  # widenFile and widenFolder to process resectedly the given files and
+  # widenFile and widenFolder to process respectedly the given files and
   # folders.
   def widen( *files )
     # First off: check if the files exist.
@@ -361,6 +363,57 @@ class Renamer
       end
     end
   end
+
+  # Private method, called through regexRename: renames a single file using a
+  # given regex. This contains the main logic of renaming files in such way.
+  # Returns the new name of the renamed file.
+  private def regexRenameFile( file, regex, with )
+    # Get the file's basename, without its extension:
+    file_name = file.basename( file.extname ).to_s
+
+    # Apply the regex!
+    file_name.gsub! regex, "#{with}"
+
+    # Rename the file and return its new name:
+    return smartRename file, file_name
+  end
+
+  # Private method, called through regexRename: recursively renames a folder 
+  # and its content using a given regex.
+  private def regexRenameFolder( folder, regex, with )
+    # Rename the folder:
+    new_folder_name = regexRenameFile folder, regex, "#{with}"
+
+    # Then rename everything it contains, recursively:
+    new_folder_name.entries.each do |entry|
+      # Ignore "." and "..", though.
+      if "." != entry.to_s and ".." != entry.to_s then
+        regexRename Pathname.new( "#{new_folder_name.realpath}/#{entry}" ),
+                                 regex, "#{with}"
+      end
+    end
+  end
+
+  # Public method: checks if the given files exist via checkFiles, then calls
+  # regexRenameFile and regexRenameFolder to process respectedly the given
+  # files and folders.
+  def regexRename( *files, regex, with )
+    # First off: check if the files exist.
+    existing = checkFiles *files
+
+    # Behave differently for files and folders:
+    existing.each do |entry|
+      # Folders:
+      if entry.directory? then
+        regexRenameFolder entry, regex, "#{with}"
+
+      # Files:
+      else
+        regexRenameFile entry, regex, "#{with}"
+      end
+    end
+  end
+
 end
 
 ###############################################################################
@@ -370,26 +423,23 @@ end
 # Help reference function:
 def help_reference()
   lines = Array.new
+  name = "#{File.basename $0}"
 
   # Help reference lines:
-  lines.push "ReNameR: a simple file renamer."
-  lines.push "Usage:"  
-  lines.push "#{File.basename $0}                                  : " +
-             "recursively renames every file and and folder in the current " +
-             "directory to a CamelCase format."
-  lines.push "#{File.basename $0} <file 1> ... <file n>            : " +
-             "recursively renames the given files and folders to a CamelCase" +
-             " format."
-  lines.push "#{File.basename $0} -w                               : " +
-             "recursively renames every file and and folder in the current " +
-             "directory adding spaces when needed."
-  lines.push "#{File.basename $0} -w/--widen <file 1> ... <file n> : " +
-             "recursively renames the given files and folders adding spaces " +
-             "when needed."
-  lines.push "#{File.basename $0} -h                               : shows " +
-             "this help reference."
-  lines.push "\nSee the configuration file located in #{ENV['HOME']}/.rnr " +
-             "to add your personal tweaks."
+  lines.push "\e[33mReNameR: a simple file renamer.\e[0m"
+  lines.push "\e[33mUsage:\e[0m"  
+  lines.push "\e[34m#{name} <files>\e[0m: recursively renames the given " +
+             "files and folders to a CamelCase format."
+  lines.push "\e[34m#{name} -w/--widen <files>\e[0m: recursively renames " +
+             "the given files and folders adding spaces when needed."
+  lines.push "\e[34m#{name} -r/--regex <regex> <substitute> <files>\e[0m: " +
+             "recursively renames the given files and folders replacing " +
+             "any match of the given regex with the given substitute."              
+  lines.push "\e[34m#{name} -h\e[0m: shows this help reference."
+  lines.push "\n\e[33mNOTE\e[0m: if no files are specified to a command, it " +
+             "will process every file in the current folder."
+  lines.push "\nSee the configuration file located in \e[34m" +
+             "#{ENV['HOME']}/.rnr\e[0m to add your personal tweaks."
 
   # Max 80 characters per line! :3
   lines.each do |entry|
@@ -404,11 +454,47 @@ if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then
   help_reference
   exit 0
 
+# Regex renaming:
+elsif [ "-r", "--regex" ].include? ARGV[0] then
+  tmp = Array.new ARGV
+  tmp.shift
+  regex = Regexp.new "#{tmp.shift}"
+  substitute_with = "#{tmp.shift}".gsub! "\\", "\\\\"
+  tmp.uniq!
+
+  # 3 Parameters: everything in the current folder.
+  if 3 == ARGV.size then
+    tmp = Dir.entries "."
+
+    # Always remove "." and "..".
+    tmp.delete "."
+    tmp.delete ".."
+    
+    # This could be quite dangerous if erroneously invoked (eg. in the user's
+    # home directory). Better use a confirmation prompt:
+    print "Do you really want to rename every file and folder in the " +
+          "current directory (#{Dir.pwd})? [y/N] "
+    answer = STDIN.gets.chomp
+
+    # Abort from anything different than y/Y:
+    unless "Y" == Unicode::capitalize( answer ) then
+      puts "Operation aborted."
+      exit 0
+    end
+
+  # User is a moron.
+  elsif 3 > ARGV.size then
+    puts "Must specify at one regex and one substitute for this modality."
+    exit -1
+  end
+
+  rnr.regexRename *tmp, regex, substitute_with
+
 # Reverse compact: 
 elsif [ "-w", "--widen" ].include? ARGV[0] then
   tmp = Array.new ARGV
-  tmp.uniq!
   tmp.shift
+  tmp.uniq!
 
   # No other parameters: run this for every file in the current directory 
   # (except . and ..):
@@ -425,12 +511,8 @@ elsif [ "-w", "--widen" ].include? ARGV[0] then
           "current directory (#{Dir.pwd})? [y/N] "
     answer = STDIN.gets.chomp
 
-    # Y/y: go on.
-    if "Y" == Unicode::capitalize( answer ) then
-      rnr.widen *tmp
-
-    # Anything else: abort.
-    else
+    # # Abort from anything different than y/Y:
+    unless "Y" == Unicode::capitalize( answer ) then
       puts "Operation aborted."
       exit 0
     end
@@ -460,12 +542,8 @@ else
           "current directory (#{Dir.pwd})? [y/N] "
     answer = STDIN.gets.chomp
 
-    # Y/y: go on.
-    if "Y" == Unicode::capitalize( answer ) then
-      rnr.compact *tmp
-
-    # Anything else: abort.
-    else
+    # Abort from anything different than y/Y:
+    unless "Y" == Unicode::capitalize( answer ) then
       puts "Operation aborted."
       exit 0
     end
