@@ -3,7 +3,9 @@ A simple (and probably dirty) files mass-renamer in ruby.
 
 IMPORTANT: this script is meant to be used on a Linux/Unix environment. It has
 not been tested (and probably never will be) on different operating systems.
+
 Tested on ruby version 2.3.1.
+
 Run the script (with -h, maybe) and it will notify you of any gem it requires 
 that has not been found on the system.
 
