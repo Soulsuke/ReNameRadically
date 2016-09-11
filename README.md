@@ -15,6 +15,8 @@ This script has the following functions:
       and, depending on the case, before or after punctation.
  3. regex: replaces all occurrences of the given regex with the given 
       substitute string.
+ 4. renaming script: creates a bash script to rename files, for whenever the
+      other modalities cannot yield the desired result.
 Note that all of these functions are recursive for folders, and will not change
 the file extension.
 

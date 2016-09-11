@@ -54,6 +54,7 @@ class Renamer
   @delimiters # Array of characters to used as word delimiters
   @ex_after   # Array of exceptions not to put a space after in widen mode.
   @ex_before  # Array of exceptions not to put a space before in widen mode.
+  @script     # Script name for script renaming mode.
 
   # Default constructor: it ensures there's a valid config file in the
   # user's home directory.
@@ -67,12 +68,14 @@ class Renamer
       @delimiters = loaded_config["delimiters"]
       @ex_after = loaded_config["ex_after"]
       @ex_before = loaded_config["ex_before"]
+      @script = loaded_config["script"]
 
       # Fastest way to check for data consistency:
       @as_spaces[0]
       @delimiters[0]
       @ex_after[0]
       @ex_before[0]
+      @script = loaded_config["script"][0]
 
     # If it fails, create a new default config file:
     rescue
@@ -128,6 +131,10 @@ class Renamer
       config.push "- \"-\""
       config.push "- \"_\""
       config.push " "
+      config.push "# Name of the script file created by renaming script mode:"
+      config.push "script:"
+      config.push "- \"REN.bash\""
+      config.push " "
 
       config = config.join "\n"
 
@@ -156,6 +163,7 @@ class Renamer
       @delimiters = loaded_config["delimiters"]
       @ex_after = loaded_config["ex_after"]
       @ex_before = loaded_config["ex_before"]
+      @script = loaded_config["script"][0]
     end
   end
 
@@ -164,7 +172,10 @@ class Renamer
   # found ones.
   private def checkFiles( *files )
     # This will contain the not found files:
-    failed = Array.new
+    not_found = Array.new
+
+    # This will contain files we do not have the permissions to move:
+    no_permissions = Array.new
 
     # This will contain the valid files:
     ok = Array.new
@@ -173,19 +184,37 @@ class Renamer
     files.each do |entry|
       tmp = Pathname.new( entry )
 
+      # The file exists!
       if tmp.exist? and "." != tmp.to_s and ".." != tmp.to_s then
-        ok.push tmp
 
-      # This happens if the file has not been found:
+        # And we do have the permissions to move it!
+        if tmp.dirname.writable? then
+          ok.push tmp
+
+        # Apparently, we cannot rename it:
+        else
+          no_permissions.push tmp
+        end
+
+      # The file has not been found:
       else
-        failed.push entry
+        not_found.push entry
       end
     end
 
-    # Print a list of the invalid files:
-    failed.each_with_index do |entry, idx|
+    # Print a list of not found files:
+    not_found.each_with_index do |entry, idx|
       if 0 == idx then
         puts "The following files will be ignored (not found or invalid):"
+      end
+
+      puts "- #{entry}"
+    end
+
+    # Print a list of files we do not have permission to rename:
+    no_permissions.each_with_index do |entry, idx|
+      if 0 == idx then
+        puts "You lack the permissions to move the following files:"
       end
 
       puts "- #{entry}"
@@ -421,6 +450,57 @@ class Renamer
     end
   end
 
+  # Public method: checks if it's possible to create a file in the current
+  # directory. If successful, then checks if the given files exist via
+  # checkFiles, then creates a bash script to easily rename them.
+  def createScript( *files )
+    # Pointless to go any further if the current directory is not writable:
+    unless Pathname.new( "." ).dirname.writable? then
+      puts "You do not have the permissions to create a file in this folder."
+      exit -1
+    end
+
+    # Now check if the files exist.
+    existing = checkFiles *files
+
+    # Now, gotta be sure that @script is not in the list of the files that
+    # should be renamed:
+    existing.delete Pathname.new @script
+
+    existing.each_with_index do |entry, idx|
+      # Only the first time: create the script.
+      if 0 == idx then
+        File.open @script, "w" do |f|
+          # Script header:
+          f.puts "#!/usr/bin/env bash"
+          f.puts ""
+
+          # Make it executable:
+          f.chmod 0700
+        end
+      end
+
+      # Append the line to rename the current file:
+      File.open @script, "a" do |f|
+        f.puts "mv \"#{entry}\" \\"
+        f.puts "   \"#{entry}\""
+        f.puts ""
+      end
+
+      # Only the last time: add the last touches to the script.
+      if idx == existing.size - 1 then
+        File.open @script, "a" do |f|
+          # Self destruct line:
+          f.puts "# Self-destruction line, you may not want to edit this:"
+          f.puts "rm \"#{@script}\""
+
+          # And an empty line at the end, because I'm that kind of guy.
+          f.puts ""
+        end
+      end
+    end
+  end
+
 end
 
 ###############################################################################
@@ -433,16 +513,26 @@ def help_reference()
   name = "#{File.basename $0}"
 
   # Help reference lines:
+  # Header:
   lines.push "\e[33mReNameR: a simple file renamer.\e[0m"
-  lines.push "\e[33mUsage:\e[0m"  
+  lines.push "\e[33mUsage:\e[0m"
+  # Compact mode:
   lines.push "\e[34m#{name} <files>\e[0m: recursively renames the given " +
              "files and folders to a CamelCase format."
+  # Widen mode:
   lines.push "\e[34m#{name} -w/--widen <files>\e[0m: recursively renames " +
              "the given files and folders adding spaces when needed."
+  # Regex mode:
   lines.push "\e[34m#{name} -r/--regex <regex> <substitute> <files>\e[0m: " +
              "recursively renames the given files and folders replacing " +
-             "any match of the given regex with the given substitute."              
+             "any match of the given regex with the given substitute."
+  # Renaming script mode:
+  lines.push "\e[34m#{name} -s/--script <files>\e[0m: creates a bash script " +
+             "to quickly rename the given files and folders, for whenever " +
+             "the other modalities cannot yield the desired result."
+  # Help switch:
   lines.push "\e[34m#{name} -h\e[0m: shows this help reference."
+  # Footer:
   lines.push ""
   lines.push "\e[33mNOTE\e[0m: if no files are specified to a command, it " +
              "will process every file in the current folder."
@@ -486,6 +576,27 @@ rnr = Renamer.new
 if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then
   help_reference
   exit 0
+
+# Create rename script:
+elsif [ "-s", "--script" ].include? ARGV[0] then
+  tmp = Array.new ARGV
+  tmp.shift
+  tmp.uniq!
+
+  # No other parameters: run this for every file in the current directory 
+  # (except . and ..):
+  if tmp.empty? then
+    tmp = Dir.entries "."
+
+    # Always remove "." and "..".
+    tmp.delete "."
+    tmp.delete ".."
+
+    # This script is sort of harmless, so there is not going to be a check
+    # for user consent.
+  end
+
+  rnr.createScript *tmp
 
 # Regex renaming:
 elsif [ "-r", "--regex" ].include? ARGV[0] then
@@ -549,11 +660,9 @@ elsif [ "-w", "--widen" ].include? ARGV[0] then
       puts "Operation aborted."
       exit 0
     end
-
-  # Else, do it just for the selected files:
-  else
-    rnr.widen *tmp
   end
+
+  rnr.widen *tmp
 
 # Compact:
 else
@@ -580,10 +689,8 @@ else
       puts "Operation aborted."
       exit 0
     end
-
-  # Else, do it just for the selected files:
-  else
-    rnr.compact *tmp
   end
+
+  rnr.compact *tmp
 end
 
