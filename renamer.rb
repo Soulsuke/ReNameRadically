@@ -570,14 +570,15 @@ def help_reference()
   end
 end
 
+# Here it is! The main protagonist! The Renamer object!
 rnr = Renamer.new
 
-# Help reference check:
+# Help reference:
 if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then
   help_reference
   exit 0
 
-# Create rename script:
+# Renaming script:
 elsif [ "-s", "--script" ].include? ARGV[0] then
   tmp = Array.new ARGV
   tmp.shift
@@ -598,7 +599,7 @@ elsif [ "-s", "--script" ].include? ARGV[0] then
 
   rnr.createScript *tmp
 
-# Regex renaming:
+# Regex:
 elsif [ "-r", "--regex" ].include? ARGV[0] then
   tmp = Array.new ARGV
   tmp.shift
@@ -634,7 +635,7 @@ elsif [ "-r", "--regex" ].include? ARGV[0] then
 
   rnr.regexRename *tmp, regex, substitute_with
 
-# Reverse compact: 
+# Widen: 
 elsif [ "-w", "--widen" ].include? ARGV[0] then
   tmp = Array.new ARGV
   tmp.shift
