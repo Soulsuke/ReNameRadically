@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<meta charset="UTF-8">
+
+<title>class ReNameR - RDoc Documentation</title>
+
+<script type="text/javascript">
+  var rdoc_rel_prefix = "./";
+</script>
+
+<script src="./js/jquery.js"></script>
+<script src="./js/darkfish.js"></script>
+
+<link href="./css/fonts.css" rel="stylesheet">
+<link href="./css/rdoc.css" rel="stylesheet">
+
+
+
+<body id="top" role="document" class="class">
+<nav role="navigation">
+  <div id="project-navigation">
+    <div id="home-section" role="region" title="Quick navigation" class="nav-section">
+  <h2>
+    <a href="./index.html" rel="home">Home</a>
+  </h2>
+
+  <div id="table-of-contents-navigation">
+    <a href="./table_of_contents.html#pages">Pages</a>
+    <a href="./table_of_contents.html#classes">Classes</a>
+    <a href="./table_of_contents.html#methods">Methods</a>
+  </div>
+</div>
+
+    <div id="search-section" role="search" class="project-section initially-hidden">
+  <form action="#" method="get" accept-charset="utf-8">
+    <div id="search-field-wrapper">
+      <input id="search-field" role="combobox" aria-label="Search"
+             aria-autocomplete="list" aria-controls="search-results"
+             type="text" name="search" placeholder="Search" spellcheck="false"
+             title="Type to search, Up and Down to navigate, Enter to load">
+    </div>
+
+    <ul id="search-results" aria-label="Search Results"
+        aria-busy="false" aria-expanded="false"
+        aria-atomic="false" class="initially-hidden"></ul>
+  </form>
+</div>
+
+  </div>
+
+  
+
+  <div id="class-metadata">
+    
+    <div id="parent-class-section" class="nav-section">
+  <h3>Parent</h3>
+
+  
+  <p class="link">Object
+  
+</div>
+
+    
+    
+    <!-- Method Quickref -->
+<div id="method-list-section" class="nav-section">
+  <h3>Methods</h3>
+
+  <ul class="link-list" role="directory">
+    
+    <li ><a href="#method-c-new">::new</a>
+    
+    <li ><a href="#method-i-checkFiles">#checkFiles</a>
+    
+    <li ><a href="#method-i-compact">#compact</a>
+    
+    <li ><a href="#method-i-compactFile">#compactFile</a>
+    
+    <li ><a href="#method-i-compactFolder">#compactFolder</a>
+    
+    <li ><a href="#method-i-createScript">#createScript</a>
+    
+    <li ><a href="#method-i-regexRename">#regexRename</a>
+    
+    <li ><a href="#method-i-regexRenameFile">#regexRenameFile</a>
+    
+    <li ><a href="#method-i-regexRenameFolder">#regexRenameFolder</a>
+    
+    <li ><a href="#method-i-smartRename">#smartRename</a>
+    
+    <li ><a href="#method-i-widen">#widen</a>
+    
+    <li ><a href="#method-i-widenFile">#widenFile</a>
+    
+    <li ><a href="#method-i-widenFolder">#widenFolder</a>
+    
+  </ul>
+</div>
+
+  </div>
+</nav>
+
+<main role="main" aria-labelledby="class-ReNameR">
+  <h1 id="class-ReNameR" class="class">
+    class ReNameR
+  </h1>
+
+  <section class="description">
+    
+<p>This is the Renamer class.</p>
+
+<p>It&#39;s supposed to help renaming files in different ways:</p>
+<dl class="rdoc-list note-list"><dt>compact
+<dd>
+<p>renames a file to a CamelCase format, removing spaces and using capital
+letters to separate words. Other capital letters areconverted to lower
+case.</p>
+</dd><dt>widen
+<dd>
+<p>renames a file adding spaces to separate words in CamelCase format, and,
+depending on the case, before or after punctation.</p>
+</dd><dt>regex
+<dd>
+<p>replaces all occurrences of the given regex with the given  substitute
+string.</p>
+</dd><dt>renaming script
+<dd>
+<p>creates a bash script to rename files, for whenever the other modalities
+cannot yield the desired result.</p>
+</dd></dl>
+
+  </section>
+
+  
+  
+  
+  <section id="5Buntitled-5D" class="documentation-section">
+    
+
+    
+
+    
+
+    
+
+    
+     <section id="public-class-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Class Methods</h3>
+       </header>
+
+    
+      <div id="method-c-new" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">new</span><span
+            class="method-args">( config_file )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Constructor: takes the path of the config file as a parameter, and ensures
+it contains the right info. If not, it gets created anew.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="new-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 30</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>( <span class="ruby-identifier">config_file</span> )
+  <span class="ruby-ivar">@config</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-identifier">config_file</span>
+
+  <span class="ruby-comment"># Attempt to read from the config file:</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-identifier">loaded_config</span> = <span class="ruby-constant">YAML</span>.<span class="ruby-identifier">load_file</span> <span class="ruby-ivar">@config</span>
+    <span class="ruby-ivar">@as_spaces</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;as_spaces&quot;</span>]
+    <span class="ruby-ivar">@delimiters</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;delimiters&quot;</span>]
+    <span class="ruby-ivar">@ex_after</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;ex_after&quot;</span>]
+    <span class="ruby-ivar">@ex_before</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;ex_before&quot;</span>]
+    <span class="ruby-ivar">@script</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;script&quot;</span>]
+
+    <span class="ruby-comment"># Fastest way to check for data consistency:</span>
+    <span class="ruby-ivar">@as_spaces</span>[<span class="ruby-value">0</span>]
+    <span class="ruby-ivar">@delimiters</span>[<span class="ruby-value">0</span>]
+    <span class="ruby-ivar">@ex_after</span>[<span class="ruby-value">0</span>]
+    <span class="ruby-ivar">@ex_before</span>[<span class="ruby-value">0</span>]
+    <span class="ruby-ivar">@script</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;script&quot;</span>][<span class="ruby-value">0</span>]
+
+  <span class="ruby-comment"># If it fails, create a new default config file:</span>
+  <span class="ruby-keyword">rescue</span>
+    <span class="ruby-comment"># This is the best way I can think of to hardcode the default config file</span>
+    <span class="ruby-comment"># without breaking the formatting.</span>
+    <span class="ruby-identifier">config</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# Characters treated as spaces, which get removed while &quot;</span> <span class="ruby-operator">+</span>
+                <span class="ruby-string">&quot;renaming a file in&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# non-wide mode:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;as_spaces:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;_\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot; &quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# Characters after which a word should be capitalized in&quot;</span> <span class="ruby-operator">+</span>
+                <span class="ruby-string">&quot; non-wide mode:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;delimiters:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;-\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;+\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;(\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;)\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;[\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;]\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;{\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;}\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&#39;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&amp;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;.\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;!\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;?\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot; &quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# Characters after which must not be added a space in &quot;</span> <span class="ruby-operator">+</span>
+                <span class="ruby-string">&quot;wide mode:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;ex_after:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&#39;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;(\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;-\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&lt;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;[\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;{\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;.\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot; &quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# Characters before which must not be added a space in &quot;</span> <span class="ruby-operator">+</span>
+                <span class="ruby-string">&quot;wide mode:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;ex_before:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;.\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;,\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;?\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;!\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&#39;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;)\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;]\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;}\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;&gt;\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;-\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;_\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot; &quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;# Name of the script file created by renaming script mode:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;script:&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot;- \&quot;REN.bash\&quot;&quot;</span>
+    <span class="ruby-identifier">config</span>.<span class="ruby-identifier">push</span> <span class="ruby-string">&quot; &quot;</span>
+
+    <span class="ruby-identifier">config</span> = <span class="ruby-identifier">config</span>.<span class="ruby-identifier">join</span> <span class="ruby-string">&quot;\n&quot;</span>
+
+    <span class="ruby-identifier">loaded_config</span> = <span class="ruby-constant">YAML</span>.<span class="ruby-identifier">load</span> <span class="ruby-identifier">config</span>
+
+    <span class="ruby-comment"># Attempt to create the file:</span>
+    <span class="ruby-keyword">begin</span> 
+      <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span> <span class="ruby-ivar">@config</span>, <span class="ruby-string">&quot;w&quot;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-identifier">config</span>
+      <span class="ruby-keyword">end</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;Created a new config file: #{@config}&quot;</span>
+
+      <span class="ruby-comment"># ...And be sure that everything went right:</span>
+      <span class="ruby-identifier">loaded_config</span> = <span class="ruby-constant">YAML</span>.<span class="ruby-identifier">load_file</span> <span class="ruby-ivar">@config</span>
+
+    <span class="ruby-comment"># Something went horribly wrong: maybe there&#39;s no home folder, or its</span>
+    <span class="ruby-comment"># permissions are all wrong... So, screw the config file and use default</span>
+    <span class="ruby-comment"># values for this ride.</span>
+    <span class="ruby-keyword">rescue</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;WARNING: could not read/write file #{@config}, you might want&quot;</span> <span class="ruby-operator">+</span>
+           <span class="ruby-string">&quot; to check out why.&quot;</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-comment"># Finally, valorize these:</span>
+    <span class="ruby-ivar">@as_spaces</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;as_spaces&quot;</span>]
+    <span class="ruby-ivar">@delimiters</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;delimiters&quot;</span>]
+    <span class="ruby-ivar">@ex_after</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;ex_after&quot;</span>]
+    <span class="ruby-ivar">@ex_before</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;ex_before&quot;</span>]
+    <span class="ruby-ivar">@script</span> = <span class="ruby-identifier">loaded_config</span>[<span class="ruby-string">&quot;script&quot;</span>][<span class="ruby-value">0</span>]
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+     <section id="public-instance-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Public Instance Methods</h3>
+       </header>
+
+    
+      <div id="method-i-checkFiles" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">checkFiles</span><span
+            class="method-args">( *files )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: checks if the given files exist, then prints a list of the
+not found ones and returns an array containing the Pathname objects of the
+found ones.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="checkFiles-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 143</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">checkFiles</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
+  <span class="ruby-comment"># This will contain the not found files:</span>
+  <span class="ruby-identifier">not_found</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+
+  <span class="ruby-comment"># This will contain files we do not have the permissions to move:</span>
+  <span class="ruby-identifier">no_permissions</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+
+  <span class="ruby-comment"># This will contain the valid files:</span>
+  <span class="ruby-identifier">ok</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
+
+  <span class="ruby-comment"># Now, check each file:</span>
+  <span class="ruby-identifier">files</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">tmp</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span>( <span class="ruby-identifier">entry</span> )
+
+    <span class="ruby-comment"># The file exists!</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">tmp</span>.<span class="ruby-identifier">exist?</span> <span class="ruby-keyword">and</span> <span class="ruby-string">&quot;.&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">tmp</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">and</span> <span class="ruby-string">&quot;..&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">tmp</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">then</span>
+
+      <span class="ruby-comment"># And we do have the permissions to move it!</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">tmp</span>.<span class="ruby-identifier">dirname</span>.<span class="ruby-identifier">writable?</span> <span class="ruby-keyword">then</span>
+        <span class="ruby-identifier">ok</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">tmp</span>
+
+      <span class="ruby-comment"># Apparently, we cannot rename it:</span>
+      <span class="ruby-keyword">else</span>
+        <span class="ruby-identifier">no_permissions</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">tmp</span>
+      <span class="ruby-keyword">end</span>
+
+    <span class="ruby-comment"># The file has not been found:</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">not_found</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">entry</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Print a list of not found files:</span>
+  <span class="ruby-identifier">not_found</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-value">0</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">idx</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;The following files will be ignored (not found or invalid):&quot;</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;- #{entry}&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Print a list of files we do not have permission to rename:</span>
+  <span class="ruby-identifier">no_permissions</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-value">0</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">idx</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;You lack the permissions to move the following files:&quot;</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;- #{entry}&quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Return the arraid containing the valid ones:</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">ok</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-compact" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">compact</span><span
+            class="method-args">( *files )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: checks if the given files exist via checkFiles, then calls
+compactFile and compactFolder to process respectedly the given files and
+folders.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="compact-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 287</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">compact</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
+  <span class="ruby-comment"># First off: check if the files exist.</span>
+  <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
+
+  <span class="ruby-comment"># Behave differently for files and folders:</span>
+  <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Folders:</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">directory?</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">compactFolder</span> <span class="ruby-identifier">entry</span>
+
+    <span class="ruby-comment"># Files:</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">compactFile</span> <span class="ruby-identifier">entry</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-createScript" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">createScript</span><span
+            class="method-args">( *files )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: checks if it&#39;s possible to create a file in the current
+directory. If successful, then checks if the given files exist via
+checkFiles, then creates a bash script to easily rename them.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="createScript-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 437</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">createScript</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
+  <span class="ruby-comment"># Pointless to go any further if the current directory is not writable:</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span>( <span class="ruby-string">&quot;.&quot;</span> ).<span class="ruby-identifier">dirname</span>.<span class="ruby-identifier">writable?</span> <span class="ruby-keyword">then</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;You do not have the permissions to create a file in this folder.&quot;</span>
+    <span class="ruby-identifier">exit</span> <span class="ruby-value">-1</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Now check if the files exist.</span>
+  <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
+
+  <span class="ruby-comment"># Now, gotta be sure that @script is not in the list of the files that</span>
+  <span class="ruby-comment"># should be renamed:</span>
+  <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">delete</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-ivar">@script</span>
+
+  <span class="ruby-comment"># Just to be 100% sure:</span>
+  <span class="ruby-keyword">begin</span>
+    <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
+      <span class="ruby-comment"># Only the first time: create the script.</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-value">0</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">idx</span> <span class="ruby-keyword">then</span>
+        <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span> <span class="ruby-ivar">@script</span>, <span class="ruby-string">&quot;w&quot;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+          <span class="ruby-comment"># Script header:</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;#!/usr/bin/env bash&quot;</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;&quot;</span>
+
+          <span class="ruby-comment"># Make it executable:</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">chmod</span> <span class="ruby-value">0700</span>
+        <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">end</span>
+
+      <span class="ruby-comment"># Append the line to rename the current file:</span>
+      <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span> <span class="ruby-ivar">@script</span>, <span class="ruby-string">&quot;a&quot;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;mv \&quot;#{entry}\&quot; \\&quot;</span>
+        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;   \&quot;#{entry}\&quot;&quot;</span>
+        <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;&quot;</span>
+      <span class="ruby-keyword">end</span>
+
+      <span class="ruby-comment"># Only the last time: add the last touches to the script.</span>
+      <span class="ruby-keyword">if</span> <span class="ruby-identifier">idx</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">size</span> <span class="ruby-operator">-</span> <span class="ruby-value">1</span> <span class="ruby-keyword">then</span>
+        <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span> <span class="ruby-ivar">@script</span>, <span class="ruby-string">&quot;a&quot;</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
+          <span class="ruby-comment"># Self destruct line:</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;# Self-destruction line, you may not want to edit this:&quot;</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;rm \&quot;#{@script}\&quot;&quot;</span>
+
+          <span class="ruby-comment"># And an empty line at the end, because I&#39;m that kind of guy.</span>
+          <span class="ruby-identifier">f</span>.<span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;&quot;</span>
+        <span class="ruby-keyword">end</span>
+      <span class="ruby-keyword">end</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-comment"># A little something for the user:</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-node">&quot;Created script file: #{@script}&quot;</span>
+
+  <span class="ruby-comment"># This should never happen... But, just in case...</span>
+  <span class="ruby-keyword">rescue</span>
+    <span class="ruby-identifier">puts</span> <span class="ruby-string">&quot;Something went wrong while writing the script file... &quot;</span> <span class="ruby-operator">+</span>
+         <span class="ruby-string">&quot;Are you sure you weren&#39;t messing with it?&quot;</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-regexRename" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">regexRename</span><span
+            class="method-args">( *files, regex, with )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: checks if the given files exist via checkFiles, then calls
+regexRenameFile and regexRenameFolder to process respectedly the given
+files and folders.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="regexRename-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 416</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRename</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
+  <span class="ruby-comment"># First off: check if the files exist.</span>
+  <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
+
+  <span class="ruby-comment"># Behave differently for files and folders:</span>
+  <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Folders:</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">directory?</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">regexRenameFolder</span> <span class="ruby-identifier">entry</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
+
+    <span class="ruby-comment"># Files:</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">regexRenameFile</span> <span class="ruby-identifier">entry</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-smartRename" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">smartRename</span><span
+            class="method-args">( file, new_name )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: will smartly rename a file (Pathname format) to new_name,
+preserving the original path and extension. If another file with the
+destination name already exists, the new one will have a number appended to
+its name. Returns the new name of the file.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="smartRename-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 202</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">smartRename</span>( <span class="ruby-identifier">file</span>, <span class="ruby-identifier">new_name</span> )
+  <span class="ruby-comment"># Be sure to remove characters which are not allowed for file names:</span>
+  <span class="ruby-identifier">new_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-string">&quot;/&quot;</span> <span class="ruby-string">&quot;&quot;</span>
+  <span class="ruby-identifier">new_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-string">&quot;\0&quot;</span> <span class="ruby-string">&quot;&quot;</span>
+
+  <span class="ruby-comment"># Also, the max name length is 255, including the extension:</span>
+  <span class="ruby-identifier">new_name</span>.<span class="ruby-identifier">scan</span>( <span class="ruby-node">/.{#{255 - &quot;#{file.extname}&quot;.length}}/</span> )[<span class="ruby-value">0</span>]
+
+  <span class="ruby-comment"># Hopefully, this is already the name that will be used:</span>
+  <span class="ruby-identifier">destination</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-node">&quot;#{file.dirname}/#{new_name}#{file.extname}&quot;</span>
+
+  <span class="ruby-comment"># Rename the file only if the destination is different than the origin and</span>
+  <span class="ruby-comment"># if the file name is not empty.</span>
+  <span class="ruby-keyword">unless</span> <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">destination</span>.<span class="ruby-identifier">basename</span> <span class="ruby-keyword">or</span> <span class="ruby-node">&quot;#{new_name}&quot;</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-keyword">or</span>
+         <span class="ruby-string">&quot;.&quot;</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">new_name</span> <span class="ruby-keyword">or</span> <span class="ruby-string">&quot;..&quot;</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">new_name</span> <span class="ruby-keyword">then</span>
+    <span class="ruby-comment"># Index variable for worst-case scenario:</span>
+    <span class="ruby-identifier">index</span> = <span class="ruby-value">0</span>
+
+    <span class="ruby-comment"># To be honest... If this goes beyond 2, the user is really just messing </span>
+    <span class="ruby-comment"># with us.</span>
+    <span class="ruby-keyword">while</span> <span class="ruby-identifier">destination</span>.<span class="ruby-identifier">exist?</span> <span class="ruby-keyword">do</span>
+      <span class="ruby-identifier">index</span> <span class="ruby-operator">+=</span> <span class="ruby-value">1</span>
+      <span class="ruby-identifier">destination</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-node">&quot;#{file.dirname}/#{new_name}-#{index}&quot;</span> <span class="ruby-operator">+</span>
+                                 <span class="ruby-node">&quot;#{file.extname}&quot;</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-comment"># Rename away!</span>
+    <span class="ruby-identifier">file</span>.<span class="ruby-identifier">rename</span> <span class="ruby-identifier">destination</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># In any case, return the destination (Pathname format):</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">destination</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-widen" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">widen</span><span
+            class="method-args">( *files )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Public method: checks if the given files exist via checkFiles, then calls
+widenFile and widenFolder to process respectedly the given files and
+folders.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="widen-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 363</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">widen</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
+  <span class="ruby-comment"># First off: check if the files exist.</span>
+  <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
+
+  <span class="ruby-comment"># Behave differently for files and folders:</span>
+  <span class="ruby-identifier">existing</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Folders:</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">directory?</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">widenFolder</span> <span class="ruby-identifier">entry</span>
+
+    <span class="ruby-comment"># Files:</span>
+    <span class="ruby-keyword">else</span>
+      <span class="ruby-identifier">widenFile</span> <span class="ruby-identifier">entry</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+     <section id="private-instance-5Buntitled-5D-method-details" class="method-section">
+       <header>
+         <h3>Private Instance Methods</h3>
+       </header>
+
+    
+      <div id="method-i-compactFile" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">compactFile</span><span
+            class="method-args">( file )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through compact: renames a single file to a compact
+CamelCase version. This contains the main logic of renaming files in such
+way. Returns the new name of the renamed file.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="compactFile-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 240</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">compactFile</span>( <span class="ruby-identifier">file</span> )
+  <span class="ruby-comment"># Get the file&#39;s basename, without its extension:</span>
+  <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
+
+  <span class="ruby-comment"># Replace the characters contained in the &quot;as_spaces&quot; field in the config</span>
+  <span class="ruby-comment"># file with spaces:</span>
+  <span class="ruby-ivar">@as_spaces</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">rm</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">file_name</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">gsub!</span> <span class="ruby-identifier">rm</span>, <span class="ruby-string">&quot; &quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Add a space after each delimiter:</span>
+  <span class="ruby-ivar">@delimiters</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">delimiter</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-identifier">delimiter</span>, <span class="ruby-node">&quot;#{delimiter} &quot;</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Now split it into parts that should be capitalized!</span>
+  <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">split</span> <span class="ruby-string">&quot; &quot;</span>
+
+  <span class="ruby-comment"># And actually capitalize them:</span>
+  <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">each_with_index</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span>, <span class="ruby-identifier">idx</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">file_name</span>[<span class="ruby-identifier">idx</span>] = <span class="ruby-constant">Unicode</span><span class="ruby-operator">::</span><span class="ruby-identifier">capitalize</span> <span class="ruby-identifier">entry</span>
+  <span class="ruby-keyword">end</span>
+  
+  <span class="ruby-comment"># Rename the file and return its new name:</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">smartRename</span> <span class="ruby-identifier">file</span>, <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">join</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-compactFolder" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">compactFolder</span><span
+            class="method-args">( folder )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through compact: recursively renames a folder and
+its content to a compact CamelCase version.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="compactFolder-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 270</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">compactFolder</span>( <span class="ruby-identifier">folder</span> )
+  <span class="ruby-comment"># Rename the folder:</span>
+  <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">compactFile</span> <span class="ruby-identifier">folder</span>
+
+  <span class="ruby-comment"># Then rename everything it contains, recursively:</span>
+  <span class="ruby-identifier">new_folder_name</span>.<span class="ruby-identifier">entries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Ignore &quot;.&quot; and &quot;..&quot;, though.</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-string">&quot;.&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">and</span> <span class="ruby-string">&quot;..&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">compact</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-node">&quot;#{new_folder_name.realpath}/#{entry}&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-regexRenameFile" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">regexRenameFile</span><span
+            class="method-args">( file, regex, with )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through regexRename: renames a single file using a
+given regex. This contains the main logic of renaming files in such way.
+Returns the new name of the renamed file.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="regexRenameFile-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 384</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRenameFile</span>( <span class="ruby-identifier">file</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
+  <span class="ruby-comment"># Get the file&#39;s basename, without its extension:</span>
+  <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
+
+  <span class="ruby-comment"># Apply the regex!</span>
+  <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
+
+  <span class="ruby-comment"># Rename the file and return its new name:</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">smartRename</span> <span class="ruby-identifier">file</span>, <span class="ruby-identifier">file_name</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-regexRenameFolder" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">regexRenameFolder</span><span
+            class="method-args">( folder, regex, with )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through regexRename: recursively renames a folder 
+and its content using a given regex.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="regexRenameFolder-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 398</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRenameFolder</span>( <span class="ruby-identifier">folder</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
+  <span class="ruby-comment"># Rename the folder:</span>
+  <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">regexRenameFile</span> <span class="ruby-identifier">folder</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
+
+  <span class="ruby-comment"># Then rename everything it contains, recursively:</span>
+  <span class="ruby-identifier">new_folder_name</span>.<span class="ruby-identifier">entries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Ignore &quot;.&quot; and &quot;..&quot;, though.</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-string">&quot;.&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">and</span> <span class="ruby-string">&quot;..&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">regexRename</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span>( <span class="ruby-node">&quot;#{new_folder_name.realpath}/#{entry}&quot;</span> ),
+                               <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-widenFile" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">widenFile</span><span
+            class="method-args">( file )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through widen: renames a single file to a wide
+version. This contains the main logic of renaming files in such way.
+Returns the new name of the renamed file.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="widenFile-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 308</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">widenFile</span>( <span class="ruby-identifier">file</span> )
+  <span class="ruby-comment"># Put the file&#39;s basename into an array, without its extension:</span>
+  <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
+
+  <span class="ruby-comment"># This will be the file&#39;s new name:</span>
+  <span class="ruby-identifier">new_file_name</span> = <span class="ruby-string">&quot;&quot;</span>
+
+  <span class="ruby-comment"># Read the file name character by character:</span>
+  <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">chars</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">c</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># To avoid useless spaces, these rules must be respected to add a space</span>
+    <span class="ruby-comment"># before the current character:</span>
+    <span class="ruby-comment"># 1. c must not be a space.</span>
+    <span class="ruby-comment"># 2. new_file_name must not be empty</span>
+    <span class="ruby-comment"># 3. new_file_name[-1] must not be a space</span>
+    <span class="ruby-comment"># 4. c must not be included in @ex_before</span>
+    <span class="ruby-comment"># 5. new_file_name[-1] must not be included in @ex_after</span>
+    <span class="ruby-comment"># 6. c and new_file_name[-1] must not both be numbers</span>
+    <span class="ruby-comment"># 6. c must be equal to Unicode::capitalize c </span>
+    <span class="ruby-keyword">if</span> <span class="ruby-identifier">c</span> <span class="ruby-operator">!=</span> <span class="ruby-string">&quot; &quot;</span> <span class="ruby-keyword">and</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">==</span> <span class="ruby-identifier">new_file_name</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-keyword">and</span>
+       <span class="ruby-string">&quot; &quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">new_file_name</span>[<span class="ruby-value">-1</span>] <span class="ruby-keyword">and</span> <span class="ruby-keyword">false</span> <span class="ruby-operator">==</span> ( <span class="ruby-ivar">@ex_before</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">c</span> ) <span class="ruby-keyword">and</span>
+       <span class="ruby-keyword">false</span> <span class="ruby-operator">==</span> ( <span class="ruby-ivar">@ex_after</span>.<span class="ruby-identifier">include?</span> <span class="ruby-identifier">new_file_name</span>[<span class="ruby-value">-1</span>] ) <span class="ruby-keyword">and</span>
+       ( <span class="ruby-keyword">nil</span> <span class="ruby-operator">==</span> ( <span class="ruby-identifier">c</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp">/[0-9]/</span> ) <span class="ruby-keyword">or</span>
+         <span class="ruby-keyword">nil</span> <span class="ruby-operator">==</span> ( <span class="ruby-identifier">new_file_name</span>[<span class="ruby-value">-1</span>] <span class="ruby-operator">=~</span> <span class="ruby-regexp">/[0-9]/</span> )
+       ) <span class="ruby-keyword">and</span> <span class="ruby-identifier">c</span> <span class="ruby-operator">==</span> <span class="ruby-constant">Unicode</span>.<span class="ruby-identifier">capitalize</span>( <span class="ruby-identifier">c</span> ) <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">new_file_name</span> <span class="ruby-operator">+=</span> <span class="ruby-string">&quot; &quot;</span>
+    <span class="ruby-keyword">end</span>
+
+    <span class="ruby-comment"># Always add the old character:</span>
+    <span class="ruby-identifier">new_file_name</span> <span class="ruby-operator">+=</span> <span class="ruby-identifier">c</span>
+  <span class="ruby-keyword">end</span>
+
+  <span class="ruby-comment"># Rename the new file and return its new name:</span>
+  <span class="ruby-keyword">return</span> <span class="ruby-identifier">smartRename</span> <span class="ruby-identifier">file</span>, <span class="ruby-identifier">new_file_name</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+      <div id="method-i-widenFolder" class="method-detail ">
+        
+        <div class="method-heading">
+          <span class="method-name">widenFolder</span><span
+            class="method-args">( folder )</span>
+          
+          <span class="method-click-advice">click to toggle source</span>
+          
+        </div>
+        
+
+        <div class="method-description">
+          
+          <p>Private method, called through widen: recursively renames a folder and its
+content to a wide name.</p>
+          
+          
+
+          
+          <div class="method-source-code" id="widenFolder-source">
+            <pre><span class="ruby-comment"># File lib/renamer.rb, line 346</span>
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">widenFolder</span>( <span class="ruby-identifier">folder</span> )
+  <span class="ruby-comment"># Rename the folder:</span>
+  <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">widenFile</span> <span class="ruby-identifier">folder</span>
+
+  <span class="ruby-comment"># Then rename everything it contains, recursively:</span>
+  <span class="ruby-identifier">new_folder_name</span>.<span class="ruby-identifier">entries</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">entry</span><span class="ruby-operator">|</span>
+    <span class="ruby-comment"># Ignore &quot;.&quot; and &quot;..&quot;, though.</span>
+    <span class="ruby-keyword">if</span> <span class="ruby-string">&quot;.&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">and</span> <span class="ruby-string">&quot;..&quot;</span> <span class="ruby-operator">!=</span> <span class="ruby-identifier">entry</span>.<span class="ruby-identifier">to_s</span> <span class="ruby-keyword">then</span>
+      <span class="ruby-identifier">widen</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-node">&quot;#{new_folder_name.realpath}/#{entry}&quot;</span>
+    <span class="ruby-keyword">end</span>
+  <span class="ruby-keyword">end</span>
+<span class="ruby-keyword">end</span></pre>
+          </div>
+          
+        </div>
+
+        
+
+        
+      </div>
+
+    
+    </section>
+  
+  </section>
+</main>
+
+
+<footer id="validator-badges" role="contentinfo">
+  <p><a href="http://validator.w3.org/check/referer">Validate</a>
+  <p>Generated by <a href="http://docs.seattlerb.org/rdoc/">RDoc</a> 4.2.1.
+  <p>Based on <a href="http://deveiate.org/projects/Darkfish-RDoc/">Darkfish</a> by <a href="http://deveiate.org">Michael Granger</a>.
+</footer>
+

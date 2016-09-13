@@ -1,20 +1,21 @@
-=begin
-This is the Renamer class.
-It's supposed to help renaming files in different ways:
- 1. compact: renames a file to a CamelCase format, removing spaces and using
-      capital letters to separate words. Other capital letters areconverted to
-      lower case.
- 2. widen: renames a file adding spaces to separate words in CamelCase format,
-      and, depending on the case, before or after punctation.
- 3. regex: replaces all occurrences of the given regex with the given 
-      substitute string.
- 4. renaming script: creates a bash script to rename files, for whenever the
-      other modalities cannot yield the desired result.
-=end
-
 require "pathname"
 require "unicode"
 require "yaml"
+
+=begin
+This is the Renamer class.
+
+It's supposed to help renaming files in different ways:
+compact:: renames a file to a CamelCase format, removing spaces and using
+          capital letters to separate words. Other capital letters areconverted
+          to lower case.
+widen:: renames a file adding spaces to separate words in CamelCase format,
+        and, depending on the case, before or after punctation.
+regex:: replaces all occurrences of the given regex with the given 
+        substitute string.
+renaming script:: creates a bash script to rename files, for whenever the
+                  other modalities cannot yield the desired result.
+=end
 
 class ReNameR
   @config     # Location of the user config file.
@@ -24,8 +25,8 @@ class ReNameR
   @ex_before  # Array of exceptions not to put a space before in widen mode.
   @script     # Script name for script renaming mode.
 
-  # Default constructor: takes the path of the config file as a parameter,
-  # and ensures it contains the right info.
+  # Constructor: takes the path of the config file as a parameter, and ensures
+  # it contains the right info. If not, it gets created anew.
   def initialize( config_file )
     @config = Pathname.new config_file
 
@@ -135,10 +136,11 @@ class ReNameR
     end
   end
 
-  # Private method: checks if the given files exist, then prints a list of the
+  # Public method: checks if the given files exist, then prints a list of the
   # not found ones and returns an array containing the Pathname objects of the
   # found ones.
-  private def checkFiles( *files )
+  public
+  def checkFiles( *files )
     # This will contain the not found files:
     not_found = Array.new
 
@@ -192,11 +194,12 @@ class ReNameR
     return ok
   end
 
-  # Private method: will smartly rename a file (Pathname format) to
+  # Public method: will smartly rename a file (Pathname format) to
   # new_name, preserving the original path and extension. If another file with
   # the destination name already exists, the new one will have a number
   # appended to its name. Returns the new name of the file.
-  private def smartRename( file, new_name )
+  public
+  def smartRename( file, new_name )
     # Be sure to remove characters which are not allowed for file names:
     new_name.gsub! "/" ""
     new_name.gsub! "\0" ""
@@ -233,7 +236,8 @@ class ReNameR
   # Private method, called through compact: renames a single file to a compact
   # CamelCase version. This contains the main logic of renaming files in such
   # way. Returns the new name of the renamed file.
-  private def compactFile( file )
+  private
+  def compactFile( file )
     # Get the file's basename, without its extension:
     file_name = file.basename( file.extname ).to_s
 
@@ -262,7 +266,8 @@ class ReNameR
   
   # Private method, called through compact: recursively renames a folder and
   # its content to a compact CamelCase version.
-  private def compactFolder( folder )
+  private
+  def compactFolder( folder )
     # Rename the folder:
     new_folder_name = compactFile folder
 
@@ -278,6 +283,7 @@ class ReNameR
   # Public method: checks if the given files exist via checkFiles, then calls
   # compactFile and compactFolder to process respectedly the given files and
   # folders.
+  public
   def compact( *files )
     # First off: check if the files exist.
     existing = checkFiles *files
@@ -298,7 +304,8 @@ class ReNameR
   # Private method, called through widen: renames a single file to a wide
   # version. This contains the main logic of renaming files in such way.
   # Returns the new name of the renamed file.
-  private def widenFile( file )
+  private
+  def widenFile( file )
     # Put the file's basename into an array, without its extension:
     file_name = file.basename( file.extname ).to_s
 
@@ -335,7 +342,8 @@ class ReNameR
 
   # Private method, called through widen: recursively renames a folder and
   # its content to a wide name.
-  private def widenFolder( folder )
+  private
+  def widenFolder( folder )
     # Rename the folder:
     new_folder_name = widenFile folder
 
@@ -351,6 +359,7 @@ class ReNameR
   # Public method: checks if the given files exist via checkFiles, then calls
   # widenFile and widenFolder to process respectedly the given files and
   # folders.
+  public
   def widen( *files )
     # First off: check if the files exist.
     existing = checkFiles *files
@@ -371,7 +380,8 @@ class ReNameR
   # Private method, called through regexRename: renames a single file using a
   # given regex. This contains the main logic of renaming files in such way.
   # Returns the new name of the renamed file.
-  private def regexRenameFile( file, regex, with )
+  private
+  def regexRenameFile( file, regex, with )
     # Get the file's basename, without its extension:
     file_name = file.basename( file.extname ).to_s
 
@@ -384,7 +394,8 @@ class ReNameR
 
   # Private method, called through regexRename: recursively renames a folder 
   # and its content using a given regex.
-  private def regexRenameFolder( folder, regex, with )
+  private
+  def regexRenameFolder( folder, regex, with )
     # Rename the folder:
     new_folder_name = regexRenameFile folder, regex, "#{with}"
 
@@ -401,6 +412,7 @@ class ReNameR
   # Public method: checks if the given files exist via checkFiles, then calls
   # regexRenameFile and regexRenameFolder to process respectedly the given
   # files and folders.
+  public
   def regexRename( *files, regex, with )
     # First off: check if the files exist.
     existing = checkFiles *files
@@ -421,6 +433,7 @@ class ReNameR
   # Public method: checks if it's possible to create a file in the current
   # directory. If successful, then checks if the given files exist via
   # checkFiles, then creates a bash script to easily rename them.
+  public
   def createScript( *files )
     # Pointless to go any further if the current directory is not writable:
     unless Pathname.new( "." ).dirname.writable? then
@@ -435,37 +448,48 @@ class ReNameR
     # should be renamed:
     existing.delete Pathname.new @script
 
-    existing.each_with_index do |entry, idx|
-      # Only the first time: create the script.
-      if 0 == idx then
-        File.open @script, "w" do |f|
-          # Script header:
-          f.puts "#!/usr/bin/env bash"
-          f.puts ""
+    # Just to be 100% sure:
+    begin
+      existing.each_with_index do |entry, idx|
+        # Only the first time: create the script.
+        if 0 == idx then
+          File.open @script, "w" do |f|
+            # Script header:
+            f.puts "#!/usr/bin/env bash"
+            f.puts ""
 
-          # Make it executable:
-          f.chmod 0700
+            # Make it executable:
+            f.chmod 0700
+          end
         end
-      end
 
-      # Append the line to rename the current file:
-      File.open @script, "a" do |f|
-        f.puts "mv \"#{entry}\" \\"
-        f.puts "   \"#{entry}\""
-        f.puts ""
-      end
-
-      # Only the last time: add the last touches to the script.
-      if idx == existing.size - 1 then
+        # Append the line to rename the current file:
         File.open @script, "a" do |f|
-          # Self destruct line:
-          f.puts "# Self-destruction line, you may not want to edit this:"
-          f.puts "rm \"#{@script}\""
-
-          # And an empty line at the end, because I'm that kind of guy.
+          f.puts "mv \"#{entry}\" \\"
+          f.puts "   \"#{entry}\""
           f.puts ""
         end
+
+        # Only the last time: add the last touches to the script.
+        if idx == existing.size - 1 then
+          File.open @script, "a" do |f|
+            # Self destruct line:
+            f.puts "# Self-destruction line, you may not want to edit this:"
+            f.puts "rm \"#{@script}\""
+
+            # And an empty line at the end, because I'm that kind of guy.
+            f.puts ""
+          end
+        end
       end
+
+      # A little something for the user:
+      puts "Created script file: #{@script}"
+
+    # This should never happen... But, just in case...
+    rescue
+      puts "Something went wrong while writing the script file... " +
+           "Are you sure you weren't messing with it?"
     end
   end
 
