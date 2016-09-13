@@ -1,6 +1,6 @@
 Gem::Specification.new do |s|
   s.name        = 'renamer'
-  s.version     = '0.0.1'
+  s.version     = '0.1.0'
   s.date        = '2016-09-13'
   s.summary     = 'ReNameR'
   s.description = 'A simple (and probably dirty) files mass-renamer.'
