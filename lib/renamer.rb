@@ -1,54 +1,22 @@
-#! /usr/bin/env ruby
-
 =begin
 This is the Renamer class.
-It's supposed to rename the given files or folders (recursively) to a compact
-CamelCase version, or to add back spaces to an already compat file.
+It's supposed to help renaming files in different ways:
+ 1. compact: renames a file to a CamelCase format, removing spaces and using
+      capital letters to separate words. Other capital letters areconverted to
+      lower case.
+ 2. widen: renames a file adding spaces to separate words in CamelCase format,
+      and, depending on the case, before or after punctation.
+ 3. regex: replaces all occurrences of the given regex with the given 
+      substitute string.
+ 4. renaming script: creates a bash script to rename files, for whenever the
+      other modalities cannot yield the desired result.
+=end
 
-This code is written in a single "all-in-one" file to be run as a standalone
-file. To require it into another project, simply remove Act III and the first
-line of this file. You may also consider fixing Act I and the value of @config
-as well.
-=end 
+require "pathname"
+require "unicode"
+require "yaml"
 
-###############################################################################
-### Act I                                                                   ###
-### Attempt to require the necessary gems.                                  ###
-###############################################################################
-# Required gems:
-req_gems = [ "pathname", "unicode", "yaml" ]
-
-# Control variable:
-gems_missing = false
-
-# Let's check the required gems!
-req_gems.each do |i|
-  # If requiring goes right, just move on.
-  begin
-    require i
-
-  # If something went wrong, print out the gem's name.
-  rescue LoadError
-    # Also, print this message the first time:
-    unless gems_missing then
-      gems_missing = true
-      puts "You lack the following ruby gems to run this script:"
-    end
-
-    puts " > #{i}"
-  end
-end
-
-# ...Of course, there's no point in going on if a require failed.
-if gems_missing then
-  exit -1
-end
-
-###############################################################################
-### Act II                                                                  ###
-### Renamer class declaration.                                              ###
-###############################################################################
-class Renamer
+class ReNameR
   @config     # Location of the user config file.
   @as_spaces  # Array of characters to be treated as spaces
   @delimiters # Array of characters to used as word delimiters
@@ -56,10 +24,10 @@ class Renamer
   @ex_before  # Array of exceptions not to put a space before in widen mode.
   @script     # Script name for script renaming mode.
 
-  # Default constructor: it ensures there's a valid config file in the
-  # user's home directory.
-  def initialize
-    @config = "#{ENV['HOME']}/.rnr"
+  # Default constructor: takes the path of the config file as a parameter,
+  # and ensures it contains the right info.
+  def initialize( config_file )
+    @config = Pathname.new config_file
 
     # Attempt to read from the config file:
     begin
@@ -501,197 +469,5 @@ class Renamer
     end
   end
 
-end
-
-###############################################################################
-### Act III                                                                 ###
-### Entry point for testing/standalone purposes.                            ###
-###############################################################################
-# Help reference function:
-def help_reference()
-  lines = Array.new
-  name = "#{File.basename $0}"
-
-  # Help reference lines:
-  # Header:
-  lines.push "\e[33mReNameR: a simple file renamer.\e[0m"
-  lines.push "\e[33mUsage:\e[0m"
-  # Compact mode:
-  lines.push "\e[34m#{name} <files>\e[0m: recursively renames the given " +
-             "files and folders to a CamelCase format."
-  # Widen mode:
-  lines.push "\e[34m#{name} -w/--widen <files>\e[0m: recursively renames " +
-             "the given files and folders adding spaces when needed."
-  # Regex mode:
-  lines.push "\e[34m#{name} -r/--regex <regex> <substitute> <files>\e[0m: " +
-             "recursively renames the given files and folders replacing " +
-             "any match of the given regex with the given substitute."
-  # Renaming script mode:
-  lines.push "\e[34m#{name} -s/--script <files>\e[0m: creates a bash script " +
-             "to quickly rename the given files and folders, for whenever " +
-             "the other modalities cannot yield the desired result."
-  # Help switch:
-  lines.push "\e[34m#{name} -h\e[0m: shows this help reference."
-  # Footer:
-  lines.push ""
-  lines.push "\e[33mNOTE\e[0m: if no files are specified to a command, it " +
-             "will process every file in the current folder."
-  lines.push ""
-  lines.push "See the configuration file located in \e[34m" +
-             "#{ENV['HOME']}/.rnr\e[0m to add your personal tweaks."
-
-  # Max 80 characters per line, but preserving words integrity! :3
-  lines.each do |entry|
-    # 80 characters line container:
-    composed = ""
-
-    # Split each message string on spaces:
-    entry.split( " " ).each do |word|
-      # If the current composed message plus the current word exceeds 80 is
-      # within 80 characters, keep composing:
-      if 80 >= "#{composed + " " + word}".length then
-        # Add a space when needed:
-        unless composed.empty? then
-          composed += " "
-        end
-        composed += "#{word}"
-
-      # If the current word would not fit in an 80 characters line, print the
-      # current composed message, and start composing the next one with an
-      # indentation of 2 spaces.
-      else
-        puts composed
-        composed = "  #{word}"
-      end
-    end
-
-    # Finally, print the last line:
-    puts composed
-  end
-end
-
-# Here it is! The main protagonist! The Renamer object!
-rnr = Renamer.new
-
-# Help reference:
-if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then
-  help_reference
-  exit 0
-
-# Renaming script:
-elsif [ "-s", "--script" ].include? ARGV[0] then
-  tmp = Array.new ARGV
-  tmp.shift
-  tmp.uniq!
-
-  # No other parameters: run this for every file in the current directory 
-  # (except . and ..):
-  if tmp.empty? then
-    tmp = Dir.entries "."
-
-    # Always remove "." and "..".
-    tmp.delete "."
-    tmp.delete ".."
-
-    # This script is sort of harmless, so there is not going to be a check
-    # for user consent.
-  end
-
-  rnr.createScript *tmp
-
-# Regex:
-elsif [ "-r", "--regex" ].include? ARGV[0] then
-  tmp = Array.new ARGV
-  tmp.shift
-  regex = Regexp.new "#{tmp.shift}"
-  substitute_with = "#{tmp.shift}".gsub! "\\", "\\\\"
-  tmp.uniq!
-
-  # 3 Parameters: everything in the current folder.
-  if 3 == ARGV.size then
-    tmp = Dir.entries "."
-
-    # Always remove "." and "..".
-    tmp.delete "."
-    tmp.delete ".."
-    
-    # This could be quite dangerous if erroneously invoked (eg. in the user's
-    # home directory). Better use a confirmation prompt:
-    print "Do you really want to rename every file and folder in the " +
-          "current directory (#{Dir.pwd})? [y/N] "
-    answer = STDIN.gets.chomp
-
-    # Abort from anything different than y/Y:
-    unless "Y" == Unicode::capitalize( answer ) then
-      puts "Operation aborted."
-      exit 0
-    end
-
-  # User is a moron.
-  elsif 3 > ARGV.size then
-    puts "Must specify at one regex and one substitute for this modality."
-    exit -1
-  end
-
-  rnr.regexRename *tmp, regex, substitute_with
-
-# Widen: 
-elsif [ "-w", "--widen" ].include? ARGV[0] then
-  tmp = Array.new ARGV
-  tmp.shift
-  tmp.uniq!
-
-  # No other parameters: run this for every file in the current directory 
-  # (except . and ..):
-  if tmp.empty? then
-    tmp = Dir.entries "."
-
-    # Always remove "." and "..".
-    tmp.delete "."
-    tmp.delete ".."
-    
-    # This could be quite dangerous if erroneously invoked (eg. in the user's
-    # home directory). Better use a confirmation prompt:
-    print "Do you really want to rename every file and folder in the " +
-          "current directory (#{Dir.pwd})? [y/N] "
-    answer = STDIN.gets.chomp
-
-    # # Abort from anything different than y/Y:
-    unless "Y" == Unicode::capitalize( answer ) then
-      puts "Operation aborted."
-      exit 0
-    end
-  end
-
-  rnr.widen *tmp
-
-# Compact:
-else
-  tmp = Array.new ARGV
-  tmp.uniq!
-
-  # No other parameters: run this for every file in the current directory
-  # (except . and ..):
-  if tmp.empty? then
-    tmp = Dir.entries "."
-
-    # Always remove "." and "..".
-    tmp.delete "."
-    tmp.delete ".."
-
-    # This could be quite dangerous if erroneously invoked (eg. in the user's
-    # home directory). Better use a confirmation prompt:
-    print "Do you really want to rename every file and folder in the " +
-          "current directory (#{Dir.pwd})? [y/N] "
-    answer = STDIN.gets.chomp
-
-    # Abort from anything different than y/Y:
-    unless "Y" == Unicode::capitalize( answer ) then
-      puts "Operation aborted."
-      exit 0
-    end
-  end
-
-  rnr.compact *tmp
 end
 
