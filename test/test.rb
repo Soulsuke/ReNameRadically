@@ -1,20 +1,20 @@
 require 'minitest/autorun'
 require "pathname"
-require 'renamer'
+require 'rename_radically'
 
-class ReNameRTest < Minitest::Test
+class RNRTest < Minitest::Test
 
   def test_compact
-    rnr = ReNameR.new "/tmp/ReNamer_tmp_config"
-    file = "/tmp/ReNameR TEST 123.mp3"
+    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
+    file = "/tmp/Re Name Radically TEST 123.mp3"
 
     File.open file, "w"
 
     rnr.compact file
 
-    if Pathname.new( "/tmp/RenamerTest123.mp3" ).exist? then
-      File.delete "/tmp/RenamerTest123.mp3"
-      File.delete "/tmp/ReNamer_tmp_config"
+    if Pathname.new( "/tmp/ReNameRadicallyTest123.mp3" ).exist? then
+      File.delete "/tmp/ReNameRadicallyTest123.mp3"
+      File.delete "/tmp/ReNameRadically_tmp_config"
 
     else
       raise "Compact failed."
@@ -22,16 +22,16 @@ class ReNameRTest < Minitest::Test
   end
 
   def test_widen
-    rnr = ReNameR.new "/tmp/ReNamer_tmp_config"
-    file = "/tmp/RenamerTest123.mp3"
+    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
+    file = "/tmp/ReNameRadicallyTest123.mp3"
     
     File.open file, "w"
 
     rnr.widen file
 
-    if Pathname.new( "/tmp/Renamer Test 123.mp3" ).exist? then
-      File.delete "/tmp/Renamer Test 123.mp3"
-      File.delete "/tmp/ReNamer_tmp_config"
+    if Pathname.new( "/tmp/Re Name Radically Test 123.mp3" ).exist? then
+      File.delete "/tmp/Re Name Radically Test 123.mp3"
+      File.delete "/tmp/ReNameRadically_tmp_config"
 
     else
       raise "Widen failed."
@@ -39,16 +39,16 @@ class ReNameRTest < Minitest::Test
   end
 
   def test_regex
-    rnr = ReNameR.new "/tmp/ReNamer_tmp_config"
-    file = "/tmp/ReNameRTest[123].mp3"
+    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
+    file = "/tmp/ReNameRadicallyTest[123].mp3"
     
     File.open file, "w"
 
     rnr.regexRename file, "\[123\]", ""
 
-    if Pathname.new( "/tmp/ReNameRTest.mp3" ).exist? then
-      File.delete "/tmp/ReNameRTest.mp3"
-      File.delete "/tmp/ReNamer_tmp_config"
+    if Pathname.new( "/tmp/ReNameRadicallyTest.mp3" ).exist? then
+      File.delete "/tmp/ReNameRadicallyTest.mp3"
+      File.delete "/tmp/ReNameRadically_tmp_config"
 
     else
       raise "Regex failed."
@@ -56,7 +56,7 @@ class ReNameRTest < Minitest::Test
   end
 
   def test_script
-    rnr = ReNameR.new "/tmp/ReNamer_tmp_config"
+    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
 
     Dir.chdir "/tmp"
 
@@ -64,7 +64,7 @@ class ReNameRTest < Minitest::Test
 
     if Pathname.new( "/tmp/REN.bash" ).exist? then
       File.delete "/tmp/REN.bash"
-      File.delete "/tmp/ReNamer_tmp_config"
+      File.delete "/tmp/ReNameRadically_tmp_config"
 
     else
       raise "Script failed."

@@ -3,7 +3,7 @@ require "unicode"
 require "yaml"
 
 =begin
-This is the Renamer class.
+This is the ReNameRadically class.
 
 It's supposed to help renaming files in different ways:
 compact:: renames a file to a CamelCase format, removing spaces and using
@@ -17,7 +17,7 @@ renaming script:: creates a bash script to rename files, for whenever the
                   other modalities cannot yield the desired result.
 =end
 
-class ReNameR
+class ReNameRadically
   @config     # Location of the user config file.
   @as_spaces  # Array of characters to be treated as spaces
   @delimiters # Array of characters to used as word delimiters

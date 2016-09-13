@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 
-<title>class ReNameR - RDoc Documentation</title>
+<title>class ReNameRadically - RDoc Documentation</title>
 
 <script type="text/javascript">
   var rdoc_rel_prefix = "./";
@@ -102,14 +102,14 @@
   </div>
 </nav>
 
-<main role="main" aria-labelledby="class-ReNameR">
-  <h1 id="class-ReNameR" class="class">
-    class ReNameR
+<main role="main" aria-labelledby="class-ReNameRadically">
+  <h1 id="class-ReNameRadically" class="class">
+    class ReNameRadically
   </h1>
 
   <section class="description">
     
-<p>This is the Renamer class.</p>
+<p>This is the <a href="ReNameRadically.html">ReNameRadically</a> class.</p>
 
 <p>It&#39;s supposed to help renaming files in different ways:</p>
 <dl class="rdoc-list note-list"><dt>compact
@@ -172,7 +172,7 @@ it contains the right info. If not, it gets created anew.</p>
 
           
           <div class="method-source-code" id="new-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 30</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 30</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>( <span class="ruby-identifier">config_file</span> )
   <span class="ruby-ivar">@config</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-identifier">config_file</span>
 
@@ -320,7 +320,7 @@ found ones.</p>
 
           
           <div class="method-source-code" id="checkFiles-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 143</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 143</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">checkFiles</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
   <span class="ruby-comment"># This will contain the not found files:</span>
   <span class="ruby-identifier">not_found</span> = <span class="ruby-constant">Array</span>.<span class="ruby-identifier">new</span>
@@ -405,7 +405,7 @@ folders.</p>
 
           
           <div class="method-source-code" id="compact-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 287</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 287</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">compact</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
   <span class="ruby-comment"># First off: check if the files exist.</span>
   <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
@@ -453,7 +453,7 @@ checkFiles, then creates a bash script to easily rename them.</p>
 
           
           <div class="method-source-code" id="createScript-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 437</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 437</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">createScript</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
   <span class="ruby-comment"># Pointless to go any further if the current directory is not writable:</span>
   <span class="ruby-keyword">unless</span> <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span>( <span class="ruby-string">&quot;.&quot;</span> ).<span class="ruby-identifier">dirname</span>.<span class="ruby-identifier">writable?</span> <span class="ruby-keyword">then</span>
@@ -543,7 +543,7 @@ files and folders.</p>
 
           
           <div class="method-source-code" id="regexRename-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 416</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 416</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRename</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
   <span class="ruby-comment"># First off: check if the files exist.</span>
   <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
@@ -592,7 +592,7 @@ its name. Returns the new name of the file.</p>
 
           
           <div class="method-source-code" id="smartRename-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 202</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 202</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">smartRename</span>( <span class="ruby-identifier">file</span>, <span class="ruby-identifier">new_name</span> )
   <span class="ruby-comment"># Be sure to remove characters which are not allowed for file names:</span>
   <span class="ruby-identifier">new_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-string">&quot;/&quot;</span> <span class="ruby-string">&quot;&quot;</span>
@@ -657,7 +657,7 @@ folders.</p>
 
           
           <div class="method-source-code" id="widen-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 363</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 363</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">widen</span>( <span class="ruby-operator">*</span><span class="ruby-identifier">files</span> )
   <span class="ruby-comment"># First off: check if the files exist.</span>
   <span class="ruby-identifier">existing</span> = <span class="ruby-identifier">checkFiles</span> <span class="ruby-operator">*</span><span class="ruby-identifier">files</span>
@@ -713,7 +713,7 @@ way. Returns the new name of the renamed file.</p>
 
           
           <div class="method-source-code" id="compactFile-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 240</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 240</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">compactFile</span>( <span class="ruby-identifier">file</span> )
   <span class="ruby-comment"># Get the file&#39;s basename, without its extension:</span>
   <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
@@ -770,7 +770,7 @@ its content to a compact CamelCase version.</p>
 
           
           <div class="method-source-code" id="compactFolder-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 270</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 270</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">compactFolder</span>( <span class="ruby-identifier">folder</span> )
   <span class="ruby-comment"># Rename the folder:</span>
   <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">compactFile</span> <span class="ruby-identifier">folder</span>
@@ -814,7 +814,7 @@ Returns the new name of the renamed file.</p>
 
           
           <div class="method-source-code" id="regexRenameFile-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 384</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 384</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRenameFile</span>( <span class="ruby-identifier">file</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
   <span class="ruby-comment"># Get the file&#39;s basename, without its extension:</span>
   <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
@@ -855,7 +855,7 @@ and its content using a given regex.</p>
 
           
           <div class="method-source-code" id="regexRenameFolder-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 398</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 398</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">regexRenameFolder</span>( <span class="ruby-identifier">folder</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-identifier">with</span> )
   <span class="ruby-comment"># Rename the folder:</span>
   <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">regexRenameFile</span> <span class="ruby-identifier">folder</span>, <span class="ruby-identifier">regex</span>, <span class="ruby-node">&quot;#{with}&quot;</span>
@@ -900,7 +900,7 @@ Returns the new name of the renamed file.</p>
 
           
           <div class="method-source-code" id="widenFile-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 308</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 308</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">widenFile</span>( <span class="ruby-identifier">file</span> )
   <span class="ruby-comment"># Put the file&#39;s basename into an array, without its extension:</span>
   <span class="ruby-identifier">file_name</span> = <span class="ruby-identifier">file</span>.<span class="ruby-identifier">basename</span>( <span class="ruby-identifier">file</span>.<span class="ruby-identifier">extname</span> ).<span class="ruby-identifier">to_s</span>
@@ -965,7 +965,7 @@ content to a wide name.</p>
 
           
           <div class="method-source-code" id="widenFolder-source">
-            <pre><span class="ruby-comment"># File lib/renamer.rb, line 346</span>
+            <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 346</span>
 <span class="ruby-keyword">def</span> <span class="ruby-identifier">widenFolder</span>( <span class="ruby-identifier">folder</span> )
   <span class="ruby-comment"># Rename the folder:</span>
   <span class="ruby-identifier">new_folder_name</span> = <span class="ruby-identifier">widenFile</span> <span class="ruby-identifier">folder</span>

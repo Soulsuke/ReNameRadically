@@ -1,6 +1,6 @@
 #! /usr/bin/env ruby
 
-require "renamer"
+require "rename_radically"
 
 # Help reference function:
 def help_reference()
@@ -9,7 +9,8 @@ def help_reference()
 
   # Help reference lines:
   # Header:
-  lines.push "\e[33mReNameR: a simple file renamer.\e[0m"
+  lines.push "\e[33mReNameRadically: a simple file renamer who mostly " +
+             "hates spaces.\e[0m"
   lines.push "\e[33mUsage:\e[0m"
   # Compact mode:
   lines.push "\e[34m#{name} <files>\e[0m: recursively renames the given " +
@@ -66,7 +67,7 @@ def help_reference()
 end
 
 # Here it is! The main protagonist! The Renamer object!
-rnr = ReNameR.new "#{ENV['HOME']}/.rnr"
+rnr = ReNameRadically.new "#{ENV['HOME']}/.rnr"
 
 # Help reference:
 if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then

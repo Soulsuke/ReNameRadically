@@ -1,5 +1,6 @@
-# ReNameR
-A simple (and probably dirty) files mass-renamer gem with a handy executable.
+# ReNameRadically
+A simple (and probably dirty) files mass-renamer ruby gem with a handy
+command line executable.
 
 IMPORTANT: this is meant to be used on a Linux/Unix environment. It has not
 been tested (and probably never will be) on different operating systems.
