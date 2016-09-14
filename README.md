@@ -2,6 +2,11 @@
 A simple (and probably dirty) files mass-renamer ruby gem with a handy
 command line executable.
 
+to install:
+  $ gem install rename_radically
+to run the executable (you may want to run it with the -h flag the first time):
+  $ rnr
+
 IMPORTANT: this is meant to be used on a Linux/Unix environment. It has not
 been tested (and probably never will be) on different operating systems.
 
