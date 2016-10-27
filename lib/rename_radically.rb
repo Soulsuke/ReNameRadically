@@ -27,7 +27,7 @@ class ReNameRadically
 
   # Constructor: takes the path of the config file as a parameter, and ensures
   # it contains the right info. If not, it gets created anew.
-  def initialize( config_file )
+  def initialize( config_file = "#{ENV['HOME']}/.rnr" )
     @config = Pathname.new config_file
 
     # Attempt to read from the config file:
@@ -243,8 +243,8 @@ class ReNameRadically
 
     # Replace the characters contained in the "as_spaces" field in the config
     # file with spaces:
-    @as_spaces.each do |rm|
-      file_name[0].gsub! rm, " "
+    @as_spaces.each do |remove|
+      file_name.gsub! remove, " "
     end
 
     # Add a space after each delimiter:

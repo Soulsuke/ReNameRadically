@@ -67,7 +67,7 @@ def help_reference()
 end
 
 # Here it is! The main protagonist! The Renamer object!
-rnr = ReNameRadically.new "#{ENV['HOME']}/.rnr"
+rnr = ReNameRadically.new
 
 # Help reference:
 if [ "-h", "--help" ].include? ARGV[0] and 1 == ARGV.size then

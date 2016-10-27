@@ -156,7 +156,7 @@ cannot yield the desired result.</p>
         
         <div class="method-heading">
           <span class="method-name">new</span><span
-            class="method-args">( config_file )</span>
+            class="method-args">( config_file = "</span>
           
           <span class="method-click-advice">click to toggle source</span>
           
@@ -173,7 +173,7 @@ it contains the right info. If not, it gets created anew.</p>
           
           <div class="method-source-code" id="new-source">
             <pre><span class="ruby-comment"># File lib/rename_radically.rb, line 30</span>
-<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>( <span class="ruby-identifier">config_file</span> )
+<span class="ruby-keyword">def</span> <span class="ruby-identifier">initialize</span>( <span class="ruby-identifier">config_file</span> = <span class="ruby-node">&quot;#{ENV[&#39;HOME&#39;]}/.rnr&quot;</span> )
   <span class="ruby-ivar">@config</span> = <span class="ruby-constant">Pathname</span>.<span class="ruby-identifier">new</span> <span class="ruby-identifier">config_file</span>
 
   <span class="ruby-comment"># Attempt to read from the config file:</span>
@@ -720,8 +720,8 @@ way. Returns the new name of the renamed file.</p>
 
   <span class="ruby-comment"># Replace the characters contained in the &quot;as_spaces&quot; field in the config</span>
   <span class="ruby-comment"># file with spaces:</span>
-  <span class="ruby-ivar">@as_spaces</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">rm</span><span class="ruby-operator">|</span>
-    <span class="ruby-identifier">file_name</span>[<span class="ruby-value">0</span>].<span class="ruby-identifier">gsub!</span> <span class="ruby-identifier">rm</span>, <span class="ruby-string">&quot; &quot;</span>
+  <span class="ruby-ivar">@as_spaces</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">remove</span><span class="ruby-operator">|</span>
+    <span class="ruby-identifier">file_name</span>.<span class="ruby-identifier">gsub!</span> <span class="ruby-identifier">remove</span>, <span class="ruby-string">&quot; &quot;</span>
   <span class="ruby-keyword">end</span>
 
   <span class="ruby-comment"># Add a space after each delimiter:</span>
