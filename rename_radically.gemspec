@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name        = 'rename_radically'
-  s.version     = '0.1.0'
-  s.date        = '2016-09-13'
+  s.version     = '0.2.0'
+  s.date        = '2016-10-27'
   s.summary     = 'ReNameRadically'
   s.description = 'A simple (and probably dirty) files mass-renamer.'
   s.homepage    = 'https://github.com/Soulsuke/ReNameR'
