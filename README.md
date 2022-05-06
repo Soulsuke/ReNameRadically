@@ -41,7 +41,7 @@ extension will not be affected.
 
 Per-user configuration is handled through a YAML file (quote human readable)
 located in:  
->/home/nanashi/.config/rnr/config.yml
+>~/.config/rnr/config.yml
 
 When renaming a file, if there is already an existing one with the desired 
 destination name, a numeric index will be appended before the file extension.
