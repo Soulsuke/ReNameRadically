@@ -160,7 +160,7 @@ end
 if modality == :script then
   outcome = rnr.create_renaming_script files
 
-  if outcome == false then
+  if outcome.nil? then
     puts 'Unable to write the renaming script in the current folder.'
     exit -2
   end
