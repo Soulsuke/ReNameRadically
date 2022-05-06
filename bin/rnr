@@ -1,8 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'pathname'
-#require 'rename_radically'
-require_relative '/home/nanashi/tests/rename_radically'
+require 'rename_radically'
 require 'yaml'
 
 
