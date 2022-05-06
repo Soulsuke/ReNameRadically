@@ -1,6 +1,6 @@
-require "pathname"
-require "unicode"
-require "yaml"
+require 'pathname'
+
+
 
 =begin
 This is the ReNameRadically class.
@@ -16,481 +16,305 @@ regex:: replaces all occurrences of the given regex with the given
 renaming script:: creates a bash script to rename files, for whenever the
                   other modalities cannot yield the desired result.
 =end
-
 class ReNameRadically
-  @config     # Location of the user config file.
-  @as_spaces  # Array of characters to be treated as spaces
-  @delimiters # Array of characters to used as word delimiters
-  @ex_after   # Array of exceptions not to put a space after in widen mode.
-  @ex_before  # Array of exceptions not to put a space before in widen mode.
-  @script     # Script name for script renaming mode.
 
-  # Constructor: takes the path of the config file as a parameter, and ensures
-  # it contains the right info. If not, it gets created anew.
-  def initialize( config_file = "#{ENV['HOME']}/.rnr" )
-    @config = Pathname.new config_file
+  #############################################################################
+  ### Attributes                                                            ###
+  #############################################################################
 
-    # Attempt to read from the config file:
-    begin
-      loaded_config = YAML.load_file @config
-      @as_spaces = loaded_config["as_spaces"]
-      @delimiters = loaded_config["delimiters"]
-      @ex_after = loaded_config["ex_after"]
-      @ex_before = loaded_config["ex_before"]
-      @script = loaded_config["script"]
+  # Dry run flag.
+  attr_reader :dry_run
 
-      # Fastest way to check for data consistency:
-      @as_spaces[0]
-      @delimiters[0]
-      @ex_after[0]
-      @ex_before[0]
-      @script = loaded_config["script"][0]
+  # Array of characters to be treated as spaces
+  attr_reader :as_spaces
 
-    # If it fails, create a new default config file:
-    rescue
-      # This is the best way I can think of to hardcode the default config file
-      # without breaking the formatting.
-      config = Array.new
-      config.push "# Characters treated as spaces, which get removed while " +
-                  "renaming a file in"
-      config.push "# non-wide mode:"
-      config.push "as_spaces:"
-      config.push "- \"_\""
-      config.push " "
-      config.push "# Characters after which a word should be capitalized in" +
-                  " non-wide mode:"
-      config.push "delimiters:"
-      config.push "- \"-\""
-      config.push "- \"+\""
-      config.push "- \"(\""
-      config.push "- \")\""
-      config.push "- \"[\""
-      config.push "- \"]\""
-      config.push "- \"{\""
-      config.push "- \"}\""
-      config.push "- \"'\""
-      config.push "- \"&\""
-      config.push "- \".\""
-      config.push "- \"!\""
-      config.push "- \"?\""
-      config.push " "
-      config.push "# Characters after which must not be added a space in " +
-                  "wide mode:"
-      config.push "ex_after:"
-      config.push "- \"'\""
-      config.push "- \"(\""
-      config.push "- \"-\""
-      config.push "- \"<\""
-      config.push "- \"[\""
-      config.push "- \"{\""
-      config.push "- \".\""
-      config.push " "
-      config.push "# Characters before which must not be added a space in " +
-                  "wide mode:"
-      config.push "ex_before:"
-      config.push "- \".\""
-      config.push "- \",\""
-      config.push "- \"?\""
-      config.push "- \"!\""
-      config.push "- \"'\""
-      config.push "- \")\""
-      config.push "- \"]\""
-      config.push "- \"}\""
-      config.push "- \">\""
-      config.push "- \"-\""
-      config.push "- \"_\""
-      config.push " "
-      config.push "# Name of the script file created by renaming script mode:"
-      config.push "script:"
-      config.push "- \"REN.bash\""
-      config.push " "
+  # Array of characters to used as word delimiters
+  attr_reader :delimiters
 
-      config = config.join "\n"
+  # Array of exceptions not to put a space after in widen mode.
+  attr_reader :ex_after
 
-      loaded_config = YAML.load config
+  # Array of exceptions not to put a space before in widen mode.
+  attr_reader :ex_before
 
-      # Attempt to create the file:
-      begin 
-        File.open @config, "w" do |f|
-          f.puts config
-        end
-        puts "Created a new config file: #{@config}"
+  # Script name for script renaming mode.
+  attr_reader :script
 
-        # ...And be sure that everything went right:
-        loaded_config = YAML.load_file @config
 
-      # Something went horribly wrong: maybe there's no home folder, or its
-      # permissions are all wrong... So, screw the config file and use default
-      # values for this ride.
-      rescue
-        puts "WARNING: could not read/write file #{@config}, you might want" +
-             " to check out why."
-      end
 
-      # Finally, valorize these:
-      @as_spaces = loaded_config["as_spaces"]
-      @delimiters = loaded_config["delimiters"]
-      @ex_after = loaded_config["ex_after"]
-      @ex_before = loaded_config["ex_before"]
-      @script = loaded_config["script"][0]
-    end
+  #############################################################################
+  ### Public instance methods                                               ###
+  #############################################################################
+
+  # Constructor.
+  # Takes as parameters the config file path and the dry run flag.
+  # Creates the config file if needed.
+  def initialize( dry_run: false,
+                  as_spaces: %w[ _ ],
+                  delimiters: %w[ - + ( ) [ ] { } ' & . ! ? ],
+                  ex_after: %w[ ' ( - < \[ { . ],
+                  ex_before: %w[ . , ? ! ' ) \] } > - _ ],
+                  script: 'REN.sh'
+                )
+    @dry_run = dry_run
+    @as_spaces = as_spaces
+    @delimiters = delimiters
+    @ex_after = ex_after
+    @ex_before = ex_before
+    @script = script
+   
+    # Ensure any invalid values are not used:
+    @as_spaces = Array.new unless @as_spaces.is_a? Array
+    @delimiters = Array.new unless @delimiters.is_a? Array
+    @ex_after = Array.new unless @ex_after.is_a? Array
+    @ex_before = Array.new unless @ex_before.is_a? Array
+    @script = 'REN.sh' if [ '', '.', '..' ].include? @script.to_s
   end
 
-  # Public method: checks if the given files exist, then prints a list of the
-  # not found ones and returns an array containing the Pathname objects of the
-  # found ones.
-  public
-  def checkFiles( *files )
-    # This will contain the not found files:
-    not_found = Array.new
 
-    # This will contain files we do not have the permissions to move:
-    no_permissions = Array.new
 
-    # This will contain the valid files:
-    ok = Array.new
+  # Simple tester function for strings.
+  def tester( text:, modality:, r_pattern: '', r_sub: '' )
+    # Turn this into a pathname:
+    text = Pathname.new text
 
-    # Now, check each file:
-    files.each do |entry|
-      tmp = Pathname.new( entry )
+    return modality_regex text, r_pattern, r_sub if modality == :regex
+    return send( "modality_#{modality}", text ) unless modality == :regex
+  end
 
-      # The file exists!
-      if tmp.exist? and "." != tmp.to_s and ".." != tmp.to_s then
 
-        # And we do have the permissions to move it!
-        if tmp.dirname.writable? then
-          ok.push tmp
 
-        # Apparently, we cannot rename it:
-        else
-          no_permissions.push tmp
-        end
+  # Recursively renames the given files using the given modality.
+  # Returns a hash of not found or unchangeable files.
+  def rename( files:, modality:, check_files: true, r_pattern: '', r_sub: '' )
+    # Data to return:
+    ret = Hash.new
 
-      # The file has not been found:
+    # If this is true then some extra steps have to be taken:
+    if check_files then
+      ret = check_files files
+      files = ret.delete :ok
+    end
+
+    # Then check each of them
+    files.each do |file|
+      # Special case for regex pattern:
+      if modality == :regex then
+        file = perform_rename file: file,
+          name: modality_regex( file, r_pattern, r_sub )
+
+      # Rename the file using the right method:
       else
-        not_found.push entry
-      end
-    end
-
-    # Print a list of not found files:
-    not_found.each_with_index do |entry, idx|
-      if 0 == idx then
-        puts "The following files will be ignored (not found or invalid):"
+        file = perform_rename file: file,
+          name: send( "modality_#{modality}", file )
       end
 
-      puts "- #{entry}"
+      # If we just renamed a folder, rename everything within it as well:
+      rename files: file.children,
+        modality: modality,
+        check_files: false,
+        r_pattern: r_pattern,
+        r_sub: r_sub \
+        if file.directory?
     end
 
-    # Print a list of files we do not have permission to rename:
-    no_permissions.each_with_index do |entry, idx|
-      if 0 == idx then
-        puts "You lack the permissions to move the following files:"
-      end
-
-      puts "- #{entry}"
-    end
-
-    # Return the arraid containing the valid ones:
-    return ok
+    # Return what files gave an error:
+    return ret
   end
 
-  # Public method: will smartly rename a file (Pathname format) to
-  # new_name, preserving the original path and extension. If another file with
-  # the destination name already exists, the new one will have a number
-  # appended to its name. Returns the new name of the file.
-  public
-  def smartRename( file, new_name )
-    # Be sure to remove characters which are not allowed for file names:
-    new_name.gsub! "/" ""
-    new_name.gsub! "\0" ""
 
-    # Also, the max name length is 255, including the extension:
-    new_name.scan( /.{#{255 - "#{file.extname}".length}}/ )[0]
 
-    # Hopefully, this is already the name that will be used:
-    destination = Pathname.new "#{file.dirname}/#{new_name}#{file.extname}"
+  # Creates a bash script to rename files.
+  # Returns nil if the file cannot be created in the current folder.
+  # Otherwise returns a hash of not found or unchangeable files.
+  def create_renaming_script( files )
+    # Check for permissions first:
+    return nil unless Pathname.new( '.' ).dirname.writable?
 
-    # Rename the file only if the destination is different than the origin and
-    # if the file name is not empty.
-    unless file.basename == destination.basename or "#{new_name}".empty? or
-           "." == new_name or ".." == new_name then
-      # Index variable for worst-case scenario:
-      index = 0
+    # Sanitize files first:
+    files = check_files files
 
-      # To be honest... If this goes beyond 2, the user is really just messing 
-      # with us.
-      while destination.exist? do
-        index += 1
-        destination = Pathname.new "#{file.dirname}/#{new_name}-#{index}" +
-                                   "#{file.extname}"
+    # Write the file:
+    File.open @script, 'w' do |f|
+      # Write the header and make it executable:
+      f.puts "#! /usr/bin/env bash\n\n"
+      f.chmod 0700
+
+      # Write in each file:
+      files.delete( :ok ).map do |file|
+        f.puts "mv '#{file}' \\\n   '#{file}'\n\n"
       end
 
-      # Rename away!
-      file.rename destination
+      # As a last thing add in the self-destruction line:
+      f.puts "# Self-destruction line, you may not want to edit this:\n" \
+        "rm '#{@script}'\n\n"
     end
 
-    # In any case, return the destination (Pathname format):
+    # Return what files gave an error:
+    return files
+  end
+
+
+
+  #############################################################################
+  ### Private instance methods                                              ###
+  #############################################################################
+
+  private
+
+  # Renames a file, taking @dry_run into account.
+  # Takes as parameters a Pathname and a new name.
+  # The original file's extension is preserved.
+  # If a file with the new name already exists, appends a number to it.
+  # Returns the new file's pathname.
+  def perform_rename( file:, name:, counter: nil )
+    # Remove unwanted characters:
+    name.gsub!( /(\/|\0)/, "" )
+
+    # Add an underscore to the counter:
+    counter = "_#{counter}" unless counter.nil?
+
+    # Also the single file name is 255 characters, including the extension:
+    name = name[ 0..(255 - file.extname.length - counter.to_s.length) ]
+
+    # Compose the final name:
+    destination = Pathname.new "#{file.dirname}/" \
+      "#{name}#{counter}#{file.extname}"
+
+    # Only rename the file if:
+    #  - the new name isn't '.' or '..'
+    #  - the name isn't empty
+    #  - the new name is different than the old one
+    if !name.match( /^\.{1,2}$/ ) and
+       !name.empty? and
+       file.basename != destination.basename
+    then
+      # If the destination already exist try again incrementing the counter:
+      if destination.exist? then
+        destination = perform_rename file: file,
+          name: name,
+          counter: (counter.to_s[ 1.. ].to_i + 1)
+
+      # If it's a dry run, simply print a log:
+      elsif @dry_run then
+        puts "DRY RUN: #{file} => #{destination}"
+        destination = file
+
+      # Otherwise, rename:
+      else
+        file.rename destination
+      end
+    end
+
+    # Always return the destination:
     return destination
   end
 
-  # Private method, called through compact: renames a single file to a compact
-  # CamelCase version. This contains the main logic of renaming files in such
-  # way. Returns the new name of the renamed file.
-  private
-  def compactFile( file )
-    # Get the file's basename, without its extension:
-    file_name = file.basename( file.extname ).to_s
 
-    # Replace the characters contained in the "as_spaces" field in the config
-    # file with spaces:
-    @as_spaces.each do |remove|
-      file_name.gsub! remove, " "
-    end
 
-    # Add a space after each delimiter:
-    @delimiters.each do |delimiter|
-      file_name.gsub! delimiter, "#{delimiter} "
-    end
-
-    # Now split it into parts that should be capitalized!
-    file_name = file_name.split " "
-
-    # And actually capitalize them:
-    file_name.each_with_index do |entry, idx|
-      file_name[idx] = Unicode::capitalize entry
-    end
-    
-    # Rename the file and return its new name:
-    return smartRename file, file_name.join
-  end
-  
-  # Private method, called through compact: recursively renames a folder and
-  # its content to a compact CamelCase version.
-  private
-  def compactFolder( folder )
-    # Rename the folder:
-    new_folder_name = compactFile folder
-
-    # Then rename everything it contains, recursively:
-    new_folder_name.entries.each do |entry|
-      # Ignore "." and "..", though.
-      if "." != entry.to_s and ".." != entry.to_s then
-        compact Pathname.new "#{new_folder_name.realpath}/#{entry}"
-      end
-    end
-  end
-
-  # Public method: checks if the given files exist via checkFiles, then calls
-  # compactFile and compactFolder to process respectedly the given files and
-  # folders.
+  # Checks if the given file names exist, prints a list of those not existing
+  # and without write permissions, then returns an array of pathnames of the
+  # rest.
   public
-  def compact( *files )
-    # First off: check if the files exist.
-    existing = checkFiles *files
+  def check_files( files )
+    # Containers:
+    not_found = Array.new
+    no_permissions = Array.new
+    ok = Array.new
 
-    # Behave differently for files and folders:
-    existing.each do |entry|
-      # Folders:
-      if entry.directory? then
-        compactFolder entry
+    # Check each file:
+    files.uniq.sort_by { |e| e.to_s.downcase }.each do |file|
+      # Turn it into a pathname:
+      file = Pathname.new file.to_s
 
-      # Files:
+      # Ignore these:
+      next if file.basename.to_s.match( /^\.{1,2}$/ )
+
+      # Check where it belongs:
+      if !file.exist? then
+        not_found << file
+      elsif !file.writable? or !file.dirname.writable? then
+        no_permissions << file
       else
-        compactFile entry
+        ok << file
       end
     end
+
+    # Return only the valid files:
+    return { ok: ok, not_found: not_found, no_permissions: no_permissions }
   end
 
-  # Private method, called through widen: renames a single file to a wide
-  # version. This contains the main logic of renaming files in such way.
-  # Returns the new name of the renamed file.
-  private
-  def widenFile( file )
-    # Put the file's basename into an array, without its extension:
-    file_name = file.basename( file.extname ).to_s
 
-    # This will be the file's new name:
-    new_file_name = ""
 
-    # Read the file name character by character:
-    file_name.chars.each do |c|
-      # To avoid useless spaces, these rules must be respected to add a space
-      # before the current character:
-      # 1. c must not be a space.
-      # 2. new_file_name must not be empty
-      # 3. new_file_name[-1] must not be a space
-      # 4. c must not be included in @ex_before
-      # 5. new_file_name[-1] must not be included in @ex_after
-      # 6. c and new_file_name[-1] must not both be numbers
-      # 6. c must be equal to Unicode::capitalize c 
-      if c != " " and false == new_file_name.empty? and
-         " " != new_file_name[-1] and false == ( @ex_before.include? c ) and
-         false == ( @ex_after.include? new_file_name[-1] ) and
-         ( nil == ( c =~ /[0-9]/ ) or
-           nil == ( new_file_name[-1] =~ /[0-9]/ )
-         ) and c == Unicode.capitalize( c ) then
-        new_file_name += " "
+  ### Renaming modalities
+  #############################################################################
+
+  # Generates a compacted file name for the given pathname.
+  def modality_compact( file )
+    # Take in the original file's name:
+    name = file.basename( file.extname ).to_s
+      # Turn these into spaces:
+      .gsub( /(#{@as_spaces.map { |a| Regexp.escape a }.join '|'})/, ' ' )
+      # Add spaces after these:
+      .gsub( /(#{@delimiters.map { |a| Regexp.escape a }.join '|'})/, '\1 ' )
+      # Split it on spaces:
+      .split ' '
+
+    # Do the capitalization:
+    name.each_with_index do |word, idx|
+      # Ignore roman numbers:
+      name[ idx ] = word.capitalize unless word.match( /^[IVXLCDM]+$/ )
+      name[ idx ] = word.upcase if word.match( /^[ivxlcdm]+$/ )
+    end
+
+    # Return the joined name:
+    return name.join
+  end
+
+
+
+  # Generates a widened file name for the given pathname.
+  def modality_widen( file )
+    # This starts off empty:
+    name = ''
+
+    # Let's parse each character:
+    file.basename( file.extname ).to_s.chars.each do |c|
+      # To avoid extra spaces we have to follow these rules:
+      #  1. c must not be a space
+      #  2. name must not be empty
+      #  3. name[ -1 ] must not be a space
+      #  4. c must not be included in @ex_before
+      #  5. name[-1] must not be included in @ex_after
+      #  6. c and name[-1] must not both be numbers
+      #  7. c must be equal to c.upcase
+      #  8. c and name[ -1 ] must not be roman numbers
+      if c != ' ' and
+         !name.empty? and
+         name[ -1 ] != ' ' and
+         !@ex_before.include? c and
+         !@ex_after.include? name[ 1 ] and
+         !( c.match( /[0-9]/ ) and name[ -1 ].match( /[0-9]/ ) ) and
+         c == c.upcase and
+         !( c.match( /[IVXLCDM]/ ) and name[ -1 ].match( /[IVXLCDM]/ ) )
+      then
+        name += ' '
       end
 
-      # Always add the old character:
-      new_file_name += c
+      # Always add in the character:
+      name += c
     end
 
-    # Rename the new file and return its new name:
-    return smartRename file, new_file_name
+    # Return the composed name:
+    return name
   end
 
-  # Private method, called through widen: recursively renames a folder and
-  # its content to a wide name.
-  private
-  def widenFolder( folder )
-    # Rename the folder:
-    new_folder_name = widenFile folder
 
-    # Then rename everything it contains, recursively:
-    new_folder_name.entries.each do |entry|
-      # Ignore "." and "..", though.
-      if "." != entry.to_s and ".." != entry.to_s then
-        widen Pathname.new "#{new_folder_name.realpath}/#{entry}"
-      end
-    end
-  end
 
-  # Public method: checks if the given files exist via checkFiles, then calls
-  # widenFile and widenFolder to process respectedly the given files and
-  # folders.
-  public
-  def widen( *files )
-    # First off: check if the files exist.
-    existing = checkFiles *files
-
-    # Behave differently for files and folders:
-    existing.each do |entry|
-      # Folders:
-      if entry.directory? then
-        widenFolder entry
-
-      # Files:
-      else
-        widenFile entry
-      end
-    end
-  end
-
-  # Private method, called through regexRename: renames a single file using a
-  # given regex. This contains the main logic of renaming files in such way.
-  # Returns the new name of the renamed file.
-  private
-  def regexRenameFile( file, regex, with )
-    # Get the file's basename, without its extension:
-    file_name = file.basename( file.extname ).to_s
-
-    # Apply the regex!
-    file_name.gsub! regex, "#{with}"
-
-    # Rename the file and return its new name:
-    return smartRename file, file_name
-  end
-
-  # Private method, called through regexRename: recursively renames a folder 
-  # and its content using a given regex.
-  private
-  def regexRenameFolder( folder, regex, with )
-    # Rename the folder:
-    new_folder_name = regexRenameFile folder, regex, "#{with}"
-
-    # Then rename everything it contains, recursively:
-    new_folder_name.entries.each do |entry|
-      # Ignore "." and "..", though.
-      if "." != entry.to_s and ".." != entry.to_s then
-        regexRename Pathname.new( "#{new_folder_name.realpath}/#{entry}" ),
-                                 regex, "#{with}"
-      end
-    end
-  end
-
-  # Public method: checks if the given files exist via checkFiles, then calls
-  # regexRenameFile and regexRenameFolder to process respectedly the given
-  # files and folders.
-  public
-  def regexRename( *files, regex, with )
-    # First off: check if the files exist.
-    existing = checkFiles *files
-
-    # Behave differently for files and folders:
-    existing.each do |entry|
-      # Folders:
-      if entry.directory? then
-        regexRenameFolder entry, regex, "#{with}"
-
-      # Files:
-      else
-        regexRenameFile entry, regex, "#{with}"
-      end
-    end
-  end
-
-  # Public method: checks if it's possible to create a file in the current
-  # directory. If successful, then checks if the given files exist via
-  # checkFiles, then creates a bash script to easily rename them.
-  public
-  def createScript( *files )
-    # Pointless to go any further if the current directory is not writable:
-    unless Pathname.new( "." ).dirname.writable? then
-      puts "You do not have the permissions to create a file in this folder."
-      exit -1
-    end
-
-    # Now check if the files exist.
-    existing = checkFiles *files
-
-    # Now, gotta be sure that @script is not in the list of the files that
-    # should be renamed:
-    existing.delete Pathname.new @script
-
-    # Just to be 100% sure:
-    begin
-      existing.each_with_index do |entry, idx|
-        # Only the first time: create the script.
-        if 0 == idx then
-          File.open @script, "w" do |f|
-            # Script header:
-            f.puts "#!/usr/bin/env bash"
-            f.puts ""
-
-            # Make it executable:
-            f.chmod 0700
-          end
-        end
-
-        # Append the line to rename the current file:
-        File.open @script, "a" do |f|
-          f.puts "mv \"#{entry}\" \\"
-          f.puts "   \"#{entry}\""
-          f.puts ""
-        end
-
-        # Only the last time: add the last touches to the script.
-        if idx == existing.size - 1 then
-          File.open @script, "a" do |f|
-            # Self destruct line:
-            f.puts "# Self-destruction line, you may not want to edit this:"
-            f.puts "rm \"#{@script}\""
-
-            # And an empty line at the end, because I'm that kind of guy.
-            f.puts ""
-          end
-        end
-      end
-
-      # A little something for the user:
-      puts "Created script file: #{@script}"
-
-    # This should never happen... But, just in case...
-    rescue
-      puts "Something went wrong while writing the script file... " +
-           "Are you sure you weren't messing with it?"
-    end
+  # Generates a new file name for the given pathname using the given regex
+  # pattern and sub value.
+  def modality_regex( file, pattern, sub )
+    return file.basename( file.extname ).to_s.gsub( /#{pattern}/, sub.to_s )
   end
 
 end

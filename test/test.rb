@@ -1,73 +1,42 @@
 require 'minitest/autorun'
-require "pathname"
 require 'rename_radically'
+
+
 
 class RNRTest < Minitest::Test
 
   def test_compact
-    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
-    file = "/tmp/Re Name Radically TEST 123.mp3"
+    original = 'qualcosa è cambiato?!= Parte iv "'
+    normalized_ok = 'QualcosaÈCambiato?!=ParteIV"'
+    normalized = ReNameRadically.new.tester modality: :compact, text: original
 
-    File.open file, "w"
-
-    rnr.compact file
-
-    if Pathname.new( "/tmp/ReNameRadicallyTest123.mp3" ).exist? then
-      File.delete "/tmp/ReNameRadicallyTest123.mp3"
-      File.delete "/tmp/ReNameRadically_tmp_config"
-
-    else
-      raise "Compact failed."
+    unless normalized_ok == normalized then
+      raise "Expected ___#{normalized_ok}___ got ___#{normalized}___"
     end
   end
+
+
 
   def test_widen
-    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
-    file = "/tmp/ReNameRadicallyTest123.mp3"
-    
-    File.open file, "w"
+    original = 'IlBelloÈAdessoVII123'
+    normalized_ok = 'Il Bello È Adesso VII 123'
+    normalized = ReNameRadically.new.tester modality: :widen, text: original
 
-    rnr.widen file
-
-    if Pathname.new( "/tmp/Re Name Radically Test 123.mp3" ).exist? then
-      File.delete "/tmp/Re Name Radically Test 123.mp3"
-      File.delete "/tmp/ReNameRadically_tmp_config"
-
-    else
-      raise "Widen failed."
+    unless normalized_ok == normalized then
+      raise "Expected ___#{normalized_ok}___ got ___#{normalized}___"
     end
   end
+
+
 
   def test_regex
-    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
-    file = "/tmp/ReNameRadicallyTest[123].mp3"
-    
-    File.open file, "w"
+    original = 'Venerdì 13 parte XIV'
+    normalized_ok = 'Sabato: 13 parte XIV'
+    normalized = ReNameRadically.new.tester modality: :regex, text: original,
+      r_pattern: 'Venerdì', r_sub: 'Sabato:'
 
-    rnr.regexRename file, "\[123\]", ""
-
-    if Pathname.new( "/tmp/ReNameRadicallyTest.mp3" ).exist? then
-      File.delete "/tmp/ReNameRadicallyTest.mp3"
-      File.delete "/tmp/ReNameRadically_tmp_config"
-
-    else
-      raise "Regex failed."
-    end
-  end
-
-  def test_script
-    rnr = ReNameRadically.new "/tmp/ReNameRadically_tmp_config"
-
-    Dir.chdir "/tmp"
-
-    rnr.createScript *(Dir.entries ".")
-
-    if Pathname.new( "/tmp/REN.bash" ).exist? then
-      File.delete "/tmp/REN.bash"
-      File.delete "/tmp/ReNameRadically_tmp_config"
-
-    else
-      raise "Script failed."
+    unless normalized_ok == normalized then
+      raise "Expected ___#{normalized_ok}___ got ___#{normalized}___"
     end
   end
 

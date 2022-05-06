@@ -1,17 +1,29 @@
 # ReNameRadically
+
 A simple (and probably dirty) files mass-renamer ruby gem with a handy
 command line executable.  
-Tested on ruby version 2.3.1.
+Tested on ruby version 3.1.2.
+
+
 
 ### Installation
 To install the gem, run:
->$ gem install --user-install rename_radically
+
+>$ gem install rename_radically
+
+On some systems you may have to use the `--user-install` flag.  
+
+
+
+### Usage
+
+**IMPORTANT:** this is meant to be used on a Linux/Unix environment. It has not
+been tested (and probably never will be) on different operating systems.
 
 To run the executable (you may want to run it with the -h flag the first time):
 >$ rnr
 
-**IMPORTANT:** this is meant to be used on a Linux/Unix environment. It has not
-been tested (and probably never will be) on different operating systems.
+
 
 ### Functionalities
 ReNameRadically has the following working modalities:  
@@ -28,8 +40,8 @@ Note that modalities 1, 2 and 3 are recursive for folders, and that the file
 extension will not be affected.  
 
 Per-user configuration is handled through a YAML file (quote human readable)
-located in:
->$HOME/.rnr
+located in:  
+>/home/nanashi/.config/rnr/config.yml
 
 When renaming a file, if there is already an existing one with the desired 
 destination name, a numeric index will be appended before the file extension.
