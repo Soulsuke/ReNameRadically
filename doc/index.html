@@ -68,7 +68,6 @@
   <h3>Class and Module Index</h3>
 
   <ul class="link-list">
-    <li><a href="./ReNameRadically.html">ReNameRadically</a>
   </ul>
 </div>
 
@@ -76,46 +75,7 @@
 </nav>
 
 <main role="main">
-
-
-<h1 id="label-ReNameRadically"><a href="ReNameRadically.html"><code>ReNameRadically</code></a><span><a href="#label-ReNameRadically">&para;</a> <a href="#top">&uarr;</a></span></h1>
-
-<p>A simple (and probably dirty) files mass-renamer ruby gem with a handy command line executable.<br> Tested on ruby version 3.1.2.</p>
-
-<h3 id="label-Installation">Installation<span><a href="#label-Installation">&para;</a> <a href="#top">&uarr;</a></span></h3>
-
-<p>To install the gem, run:</p>
-
-<blockquote>
-<p>$ gem install rename_radically</p>
-</blockquote>
-
-<p>On some systems you may have to use the <code>--user-install</code> flag.</p>
-
-<h3 id="label-Usage">Usage<span><a href="#label-Usage">&para;</a> <a href="#top">&uarr;</a></span></h3>
-
-<p><strong>IMPORTANT:</strong> this is meant to be used on a Linux/Unix environment. It has not been tested (and probably never will be) on different operating systems.</p>
-
-<p>To run the executable (you may want to run it with the -h flag the first time):</p>
-
-<blockquote>
-<p>$ rnr</p>
-</blockquote>
-
-<h3 id="label-Functionalities">Functionalities<span><a href="#label-Functionalities">&para;</a> <a href="#top">&uarr;</a></span></h3>
-
-<p><a href="ReNameRadically.html"><code>ReNameRadically</code></a> has the following working modalities:<br> - <strong>compact:</strong> renames a file to a CamelCase format, removing spaces and using  capital letters to separate words. Other capital letters  areconverted to lower case.<br> - <strong>widen:</strong> renames a file adding spaces to separate words in CamelCase  format, and, depending on the case, before or after punctation.<br> - <strong>regex:</strong> replaces all occurrences of the given regex with the given  substitute string.<br> - <strong>renaming script:</strong> creates a bash script to rename files, for whenever the  other modalities cannot yield the desired result.<br> Note that modalities 1, 2 and 3 are recursive for folders, and that the file extension will not be affected.</p>
-
-<p>Per-user configuration is handled through a YAML file (quote human readable) located in:</p>
-
-<blockquote>
-<p>~/.config/rnr/config.yml</p>
-</blockquote>
-
-<p>When renaming a file, if there is already an existing one with the desired destination name, a numeric index will be appended before the file extension. If the resulting new name would be empty, the file will not be renamed at all. If the new file name would exceed 255 characters minus the extension’s length, it will be truncated.</p>
-
-<p>Every other info you may need about this gem can be found either reading its source code (which I’m trying to keep readable and well commented), or by running its executable file with the -h flag.</p>
-
+<p>This is the API documentation for RDoc Documentation.
 </main>
 
 

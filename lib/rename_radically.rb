@@ -285,15 +285,15 @@ class ReNameRadically
       #  2. name must not be empty
       #  3. name[ -1 ] must not be a space
       #  4. c must not be included in @ex_before
-      #  5. name[-1] must not be included in @ex_after
-      #  6. c and name[-1] must not both be numbers
+      #  5. name[ -1 ] must not be included in @ex_after
+      #  6. c and name[ -1 ] must not both be numbers
       #  7. c must be equal to c.upcase
       #  8. c and name[ -1 ] must not be roman numbers
       if c != ' ' and
          !name.empty? and
          name[ -1 ] != ' ' and
          !@ex_before.include? c and
-         !@ex_after.include? name[ 1 ] and
+         !@ex_after.include? name[ -1 ] and
          !( c.match( /[0-9]/ ) and name[ -1 ].match( /[0-9]/ ) ) and
          c == c.upcase and
          !( c.match( /[IVXLCDM]/ ) and name[ -1 ].match( /[IVXLCDM]/ ) )
